@@ -11,10 +11,9 @@ onready var main_hand_pos = $MainHandPosition
 var players = {}
 var deck = []
 var pile = []
+var player
 
 var current = 0
-
-signal current_player_changed
 
 func _ready():
 	for h in hands.get_children():
@@ -34,17 +33,17 @@ func _ready():
 	start()
 
 func instance_new_player(player_id):
-	var player = player_scene.instance()
-	player.player_id = player_id
-	player.controller_path = get_path()
-	hands.add_child(player)
-	player.transform.origin = main_hand_pos.transform.origin
+	var p = player_scene.instance()
+	p.player_id = player_id
+	p.controller_path = get_path()
+	hands.add_child(p)
+	p.transform.origin = main_hand_pos.transform.origin
 
-	_setup_player(player)
+	_setup_player(p)
 
-func _setup_player(player):
-	players[player.player_id] = player
-	player.connect("turn_over", self, "_on_turn_played", [player])
+func _setup_player(p):
+	players[p.player_id] = p
+	p.connect("turn_over", self, "_on_turn_played", [p])
 
 func clear(stack: Array, stack_obj: Node):
 	stack.clear()
@@ -70,11 +69,17 @@ func insert_in_deck(card, index := -1):
 		deck.insert(index, card)
 	deck_obj.add_child(card)
 	card.face_down()
+	card.connect("input_event", self, "_on_deck_clicked", [card])
 	_space_stacked_cards(deck)
+
+func _on_deck_clicked(_camera, event, _click_pos, _normal, _shape, _card):
+	if player.can_play && player.playable.size() == 0 && event is InputEventMouseButton && event.pressed:
+		player.draw_and_pass()
 
 func pop_deck():
 	var card = deck.pop_back()
 	deck_obj.remove_child(card)
+	card.disconnect("input_event", self, "_on_deck_clicked")
 	return card
 
 func top_card():
@@ -108,4 +113,5 @@ func next_player():
 	current += 1
 	if current > players.size():
 		current = 1
-	emit_signal("current_player_changed", current)
+	player = players[current]
+	player.start_turn()

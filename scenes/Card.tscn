@@ -36,7 +36,6 @@ extents = Vector3( 0.5, 1.5, 0.1 )
 monitoring = false
 monitorable = false
 script = ExtResource( 4 )
-color = 0
 symbol_code = "1"
 
 [node name="Viewport" type="Viewport" parent="."]
@@ -67,3 +66,4 @@ monitorable = false
 
 [node name="CollisionShape" type="CollisionShape" parent="Highlight Area"]
 shape = SubResource( 7 )
+disabled = true

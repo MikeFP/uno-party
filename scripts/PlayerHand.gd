@@ -18,19 +18,22 @@ signal turn_over
 func _ready():
 	for c in get_children():
 		add_card(c)
-	controller.connect("current_player_changed", self, "_turn_changed")
 
 func lookat_camera():
 	transform.basis = Basis()
 	rotate_x(deg2rad(45))
 	rotate_y(deg2rad(-180))
 
-func _turn_changed(cur_player):
-	if cur_player == player_id:
-		can_play = true
-		playable = Utils.get_playable_cards(cards, controller.top_card())
-	else:
-		playable = []
+func start_turn():
+	can_play = true
+	playable = Utils.get_playable_cards(cards, controller.top_card())
+	for c in playable:
+		c.enable_highlight()
+	
+func _on_deck_clicked():
+	if can_play && playable.size() == 0:
+		draw()
+		pass_turn()
 
 func add_card(card):
 	if !cards.has(card):
@@ -41,7 +44,7 @@ func add_card(card):
 			card.transform.basis = Basis()
 
 		card.face_up()
-		card.transform.origin.z = cards.size() * 0.01
+		card.disable_area()
 		card.hl_area.connect("mouse_entered", self, "_on_mouse_entered_hl_area", [card])
 		card.hl_area.connect("input_event", self, "_on_card_click", [card])
 
@@ -55,18 +58,29 @@ func remove_card(card):
 			remove_child(card)
 		card.hl_area.disconnect("mouse_entered", self, "_on_mouse_entered_hl_area")
 		card.hl_area.disconnect("input_event", self, "_on_card_click")
+		card.disable_highlight()
+		card.enable_area()
+
+		_space_cards()
 
 func draw(amount := 1):
 	for _i in range(amount):
 		add_card(controller.pop_deck())
 
+func draw_and_pass(amount := 1):
+	draw(amount)
+	pass_turn()
+
 func _space_cards():
 	if cards.size() > 0:
 		var width = (cards.size() - 1) * max_space_between_cards + 1.0
 		var x = -width/2 + 0.5
+		var i = cards.size() - 1
 		for c in cards:
 			c.transform.origin.x = x
+			c.transform.origin.z = - i * 0.01
 			x += max_space_between_cards
+			i -= 1
 
 func _on_card_click(_camera, event, _click_pos, _normal, _shape, card):
 	if can_play && playable.has(card) && event is InputEventMouseButton && event.pressed:
@@ -95,8 +109,17 @@ func highlight_card(card):
 
 func play_card(card):
 	if cards.has(card):
-		stop_highlight()
-		can_play = false
 		remove_card(card)
 		controller.discard(card)
-		emit_signal("turn_over")
+		pass_turn()
+
+func pass_turn():
+	end_turn()
+	emit_signal("turn_over")
+
+func end_turn():
+	stop_highlight()
+	can_play = false
+	for c in playable:
+		c.disable_highlight()
+	playable = []

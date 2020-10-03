@@ -40,3 +40,15 @@ func face_down():
 	transform.basis = Basis()
 	rotate_y(deg2rad(180))
 	is_face_up = false
+
+func disable_highlight():
+	hl_area.get_node("CollisionShape").disabled = true
+
+func enable_highlight():
+	hl_area.get_node("CollisionShape").disabled = false
+
+func disable_area():
+	get_node("CollisionShape").disabled = true
+
+func enable_area():
+	get_node("CollisionShape").disabled = false
