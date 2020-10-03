@@ -14,6 +14,7 @@ var max_space_between_cards = 0.6
 var can_play = false
 
 signal turn_over
+signal playable_changed
 
 func _ready():
 	for c in get_children():
@@ -26,9 +27,14 @@ func lookat_camera():
 
 func start_turn():
 	can_play = true
-	playable = Utils.get_playable_cards(cards, controller.top_card())
-	for c in playable:
-		c.enable_highlight()
+	_update_playable()
+
+func _update_playable():
+	if controller.pile.size() > 0:
+		playable = Utils.get_playable_cards(cards, controller.top_card())
+		for c in playable:
+			c.enable_highlight()
+		emit_signal("playable_changed", playable)
 	
 func _on_deck_clicked():
 	if can_play && playable.size() == 0:
@@ -49,6 +55,7 @@ func add_card(card):
 		card.hl_area.connect("input_event", self, "_on_card_click", [card])
 
 		_space_cards()
+		_update_playable()
 
 func remove_card(card):
 	var i = cards.find(card)
@@ -123,3 +130,4 @@ func end_turn():
 	for c in playable:
 		c.disable_highlight()
 	playable = []
+	emit_signal("playable_changed", playable)

@@ -19,7 +19,7 @@ func _ready():
 	for h in hands.get_children():
 		_setup_player(h)
 
-	clear(deck, deck_obj)
+	clear(deck, deck_obj.get_node("Cards"))
 	clear(pile, discard_pile_obj)
 
 	_generate_deck()
@@ -29,6 +29,8 @@ func _ready():
 	players[2].draw(3)
 
 	discard(pop_deck())
+
+	deck_obj.connect("input_event", self, "_handle_deck_input")
 
 	start()
 
@@ -44,6 +46,7 @@ func instance_new_player(player_id):
 func _setup_player(p):
 	players[p.player_id] = p
 	p.connect("turn_over", self, "_on_turn_played", [p])
+	p.connect("playable_changed", self, "_on_playable_cards_changed", [p])
 
 func clear(stack: Array, stack_obj: Node):
 	stack.clear()
@@ -67,19 +70,27 @@ func insert_in_deck(card, index := -1):
 		deck.append(card)
 	else:
 		deck.insert(index, card)
-	deck_obj.add_child(card)
+	
+	deck_obj.get_node("Cards").add_child(card)
+	deck_obj.get_node("CollisionShape").scale.z = deck.size() * 0.01 + 0.1
+
 	card.face_down()
-	card.connect("input_event", self, "_on_deck_clicked", [card])
 	_space_stacked_cards(deck)
 
-func _on_deck_clicked(_camera, event, _click_pos, _normal, _shape, _card):
-	if player.can_play && player.playable.size() == 0 && event is InputEventMouseButton && event.pressed:
-		player.draw_and_pass()
+func _handle_deck_input(_camera, event, _click_pos, _normal, _shape):
+	if event is InputEventMouseButton && event.pressed:
+		if can_draw():
+			player.draw()
+			if player.playable.size() == 0:
+				player.pass_turn()
+
+func can_draw():
+	return player.can_play && player.playable.size() == 0
 
 func pop_deck():
 	var card = deck.pop_back()
-	deck_obj.remove_child(card)
-	card.disconnect("input_event", self, "_on_deck_clicked")
+	deck_obj.get_node("Cards").remove_child(card)
+	deck_obj.get_node("CollisionShape").scale.z = deck.size() * 0.01 + 0.1
 	return card
 
 func top_card():
@@ -108,6 +119,12 @@ func start():
 
 func _on_turn_played(_player):
 	next_player()
+
+func _on_playable_cards_changed(playable, _player):
+	if playable.size() == 0:
+		deck_obj.enable_hover()
+	else:
+		deck_obj.disable_hover()
 
 func next_player():
 	current += 1

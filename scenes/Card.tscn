@@ -1,7 +1,8 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=12 format=2]
 
 [ext_resource path="res://scenes/Card Front Texture.tscn" type="PackedScene" id=1]
 [ext_resource path="res://textures/card-back.png" type="Texture" id=2]
+[ext_resource path="res://scripts/Hoverable.gd" type="Script" id=3]
 [ext_resource path="res://scripts/Card.gd" type="Script" id=4]
 
 [sub_resource type="QuadMesh" id=1]
@@ -63,6 +64,9 @@ shape = SubResource( 6 )
 [node name="Highlight Area" type="Area" parent="."]
 monitoring = false
 monitorable = false
+script = ExtResource( 3 )
+area_path = NodePath(".")
+collider_path = NodePath("CollisionShape")
 
 [node name="CollisionShape" type="CollisionShape" parent="Highlight Area"]
 shape = SubResource( 7 )
