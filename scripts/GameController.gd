@@ -20,6 +20,9 @@ func _ready():
 	for h in hands.get_children():
 		_setup_player(h)
 
+	clear(deck, deck_obj)
+	clear(pile, discard_pile_obj)
+
 	_generate_deck()
 	shuffle(deck)
 
@@ -43,23 +46,21 @@ func _setup_player(player):
 	players[player.player_id] = player
 	player.connect("turn_over", self, "_on_turn_played", [player])
 
+func clear(stack: Array, stack_obj: Node):
+	stack.clear()
+	for c in stack_obj.get_children():
+		stack_obj.remove_child(c)
+		c.queue_free()
+
 func _generate_deck():
-	for color in Utils.CardColorType.values():
+	for color in Utils.CardColor.values().slice(0, -2):
 		for i in range(10):
 			insert_in_deck(_instance_card(str(i), color))
 
-func _instance_card(symbol_name: String, color):
+func _instance_card(symbol_name: String, color: int):
 	var card = card_scene.instance()
-
-	if symbol_name.is_valid_integer():
-		card.type = Utils.CardType.NUMBER
-	else:
-		card.type = Utils.CardType[symbol_name.to_upper()]
-	
-	if color != null:
-		card.color = color
-	if card.type == Utils.CardType.NUMBER:
-		card.value = symbol_name
+	card.symbol = symbol_name
+	card.color = color
 	return card
 
 func insert_in_deck(card, index := -1):
@@ -76,6 +77,9 @@ func pop_deck():
 	deck_obj.remove_child(card)
 	return card
 
+func top_card():
+	return pile[-1]
+
 func _space_stacked_cards(stack):
 	var i = 0
 	for card in stack:
@@ -90,6 +94,7 @@ func discard(card):
 	_space_stacked_cards(pile)
 
 func shuffle(stack):
+	randomize()
 	stack.shuffle()
 	_space_stacked_cards(stack)
 

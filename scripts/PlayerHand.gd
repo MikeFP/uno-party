@@ -5,7 +5,7 @@ export var controller_path: NodePath
 onready var controller = get_node(controller_path)
 
 var cards = []
-var card_world
+var playable = []
 
 var highlighted_card
 
@@ -28,6 +28,9 @@ func lookat_camera():
 func _turn_changed(cur_player):
 	if cur_player == player_id:
 		can_play = true
+		playable = Utils.get_playable_cards(cards, controller.top_card())
+	else:
+		playable = []
 
 func add_card(card):
 	if !cards.has(card):
@@ -66,11 +69,11 @@ func _space_cards():
 			x += max_space_between_cards
 
 func _on_card_click(_camera, event, _click_pos, _normal, _shape, card):
-	if can_play && event is InputEventMouseButton && event.pressed:
+	if can_play && playable.has(card) && event is InputEventMouseButton && event.pressed:
 		play_card(card)
 
 func _on_mouse_entered_hl_area(card):
-	if highlighted_card == null:
+	if highlighted_card == null && card in playable:
 		highlight_card(card)
 
 func _on_mouse_exited(card):
