@@ -14,6 +14,7 @@ var max_space_between_cards = 0.6
 var can_play = false
 
 signal turn_over
+signal card_played
 signal playable_changed
 
 func _ready():
@@ -118,10 +119,11 @@ func play_card(card):
 	if cards.has(card):
 		remove_card(card)
 		controller.discard(card)
-		pass_turn()
+		emit_signal("card_played", card)
 
 func pass_turn():
 	end_turn()
+	yield(get_tree(), "idle_frame")
 	emit_signal("turn_over")
 
 func end_turn():

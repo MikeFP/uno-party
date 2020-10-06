@@ -13,6 +13,8 @@ var deck = []
 var pile = []
 var player
 
+var unprocessed_card
+
 var current = 0
 
 func _ready():
@@ -47,6 +49,7 @@ func _setup_player(p):
 	players[p.player_id] = p
 	p.connect("turn_over", self, "_on_turn_played", [p])
 	p.connect("playable_changed", self, "_on_playable_cards_changed", [p])
+	p.connect("card_played", self, "_on_card_played", [p])
 
 func clear(stack: Array, stack_obj: Node):
 	stack.clear()
@@ -58,6 +61,14 @@ func _generate_deck():
 	for color in Utils.CardColor.values().slice(0, -2):
 		for i in range(10):
 			insert_in_deck(_instance_card(str(i), color))
+		for _i in range(2):
+			insert_in_deck(_instance_card("block", color))
+			insert_in_deck(_instance_card("reverse", color))
+			insert_in_deck(_instance_card("plus2", color))
+	
+	for _i in range(4):
+		insert_in_deck(_instance_card("plus4", Utils.CardColor.BLACK))
+		insert_in_deck(_instance_card("wildcard", Utils.CardColor.BLACK))
 
 func _instance_card(symbol_name: String, color: int):
 	var card = card_scene.instance()
@@ -126,9 +137,29 @@ func _on_playable_cards_changed(playable, _player):
 	else:
 		deck_obj.disable_hover()
 
+func _on_card_played(card, _p):
+	unprocessed_card = card
+
+	# process card effects when played, before passing turn
+	player.pass_turn()
+
 func next_player():
 	current += 1
 	if current > players.size():
 		current = 1
 	player = players[current]
+
 	player.start_turn()
+
+	if unprocessed_card != null:
+		# process card effects after passing turn to next player
+		var card = unprocessed_card
+		unprocessed_card = null
+		if card.type == Utils.CardType.PLUS2:
+			player.draw_and_pass(2)
+		elif card.type == Utils.CardType.PLUS4:
+			player.draw_and_pass(4)
+		elif card.type == Utils.CardType.BLOCK:
+			player.pass_turn()
+		elif card.type == Utils.CardType.REVERSE && players.size() == 2:
+			player.pass_turn()

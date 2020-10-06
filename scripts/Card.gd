@@ -20,7 +20,8 @@ func _ready():
 func set_symbol(new_value: String):
 	symbol = new_value
 	type = Utils.card_type_for_symbol(symbol)
-	_update_symbol()
+	if type != Utils.CardType.NONE:
+		_update_symbol()
 
 func set_color(new_color):
 	color = new_color
