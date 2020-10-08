@@ -2,7 +2,9 @@ extends Spatial
 
 export var player_id := 0
 export var controller_path: NodePath
+export var deck_path: NodePath
 onready var controller = get_node(controller_path)
+onready var deck_obj = get_node(deck_path)
 
 var cards = []
 var playable = []
@@ -13,13 +15,22 @@ var max_space_between_cards = 0.6
 
 var can_play = false
 
-signal turn_over
 signal card_played
+signal drawn
 signal playable_changed
 
 func _ready():
 	for c in get_children():
 		add_card(c)
+	deck_obj.connect("input_event", self, "_handle_deck_input")
+
+func _handle_deck_input(_camera, event, _click_pos, _normal, _shape):
+	if event is InputEventMouseButton && event.pressed:
+		if can_draw():
+			draw()
+
+func can_draw():
+	return can_play && playable.size() == 0
 
 func lookat_camera():
 	transform.basis = Basis()
@@ -33,14 +44,9 @@ func start_turn():
 func _update_playable():
 	if controller.pile.size() > 0:
 		playable = Utils.get_playable_cards(cards, controller.top_card())
+		emit_signal("playable_changed", playable)
 		for c in playable:
 			c.enable_highlight()
-		emit_signal("playable_changed", playable)
-	
-func _on_deck_clicked():
-	if can_play && playable.size() == 0:
-		draw()
-		pass_turn()
 
 func add_card(card):
 	if !cards.has(card):
@@ -72,12 +78,12 @@ func remove_card(card):
 		_space_cards()
 
 func draw(amount := 1):
+	var new_cards = []
 	for _i in range(amount):
-		add_card(controller.pop_deck())
-
-func draw_and_pass(amount := 1):
-	draw(amount)
-	pass_turn()
+		var c = controller.pop_deck()
+		add_card(c)
+		new_cards.append(c)
+	emit_signal("drawn", new_cards)
 
 func _space_cards():
 	if cards.size() > 0:
@@ -120,11 +126,6 @@ func play_card(card):
 		remove_card(card)
 		controller.discard(card)
 		emit_signal("card_played", card)
-
-func pass_turn():
-	end_turn()
-	yield(get_tree(), "idle_frame")
-	emit_signal("turn_over")
 
 func end_turn():
 	stop_highlight()

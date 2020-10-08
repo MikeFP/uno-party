@@ -13,7 +13,7 @@ var deck = []
 var pile = []
 var player
 
-var unprocessed_card
+var processing_card
 
 var current = 0
 
@@ -27,12 +27,10 @@ func _ready():
 	_generate_deck()
 	shuffle(deck)
 
-	players[1].draw(3)
-	players[2].draw(3)
+	# players[1].draw(1)
+	# players[2].draw(1)
 
 	discard(pop_deck())
-
-	deck_obj.connect("input_event", self, "_handle_deck_input")
 
 	start()
 
@@ -47,7 +45,7 @@ func instance_new_player(player_id):
 
 func _setup_player(p):
 	players[p.player_id] = p
-	p.connect("turn_over", self, "_on_turn_played", [p])
+	p.connect("drawn", self, "_on_cards_drawn", [p])
 	p.connect("playable_changed", self, "_on_playable_cards_changed", [p])
 	p.connect("card_played", self, "_on_card_played", [p])
 
@@ -88,16 +86,6 @@ func insert_in_deck(card, index := -1):
 	card.face_down()
 	_space_stacked_cards(deck)
 
-func _handle_deck_input(_camera, event, _click_pos, _normal, _shape):
-	if event is InputEventMouseButton && event.pressed:
-		if can_draw():
-			player.draw()
-			if player.playable.size() == 0:
-				player.pass_turn()
-
-func can_draw():
-	return player.can_play && player.playable.size() == 0
-
 func pop_deck():
 	var card = deck.pop_back()
 	deck_obj.get_node("Cards").remove_child(card)
@@ -128,38 +116,50 @@ func shuffle(stack):
 func start():
 	next_player()
 
-func _on_turn_played(_player):
-	next_player()
+func _on_cards_drawn(_cards, p):
+	if p == player && player.playable.size() == 0:
+		next_player()
 
-func _on_playable_cards_changed(playable, _player):
-	if playable.size() == 0:
-		deck_obj.enable_hover()
-	else:
-		deck_obj.disable_hover()
+func _on_playable_cards_changed(_playable, p):
+	if p == player:
+		if p.can_draw():
+			deck_obj.enable_hover()
+		else:
+			deck_obj.disable_hover()
 
 func _on_card_played(card, _p):
-	unprocessed_card = card
+	processing_card = card
 
 	# process card effects when played, before passing turn
-	player.pass_turn()
+
+	next_player()
+
+	# process card effects after passing turn to next player
+	processing_card = null
+
+	if card.type == Utils.CardType.PLUS2:
+		player.draw(2)
+		next_player()
+	elif card.type == Utils.CardType.PLUS4:
+		player.draw(4)
+		next_player()
+	elif card.type == Utils.CardType.BLOCK:
+		next_player()
+	elif card.type == Utils.CardType.REVERSE && players.size() == 2:
+		next_player()
+	
+	yield(get_tree(), "idle_frame")
+	player.start_turn()
 
 func next_player():
+	if current > 0:
+		player.end_turn()
+
 	current += 1
 	if current > players.size():
 		current = 1
 	player = players[current]
 
-	player.start_turn()
-
-	if unprocessed_card != null:
-		# process card effects after passing turn to next player
-		var card = unprocessed_card
-		unprocessed_card = null
-		if card.type == Utils.CardType.PLUS2:
-			player.draw_and_pass(2)
-		elif card.type == Utils.CardType.PLUS4:
-			player.draw_and_pass(4)
-		elif card.type == Utils.CardType.BLOCK:
-			player.pass_turn()
-		elif card.type == Utils.CardType.REVERSE && players.size() == 2:
-			player.pass_turn()
+	if processing_card == null:
+		yield(get_tree(), "idle_frame")
+		player.start_turn()
