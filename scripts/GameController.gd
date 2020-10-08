@@ -7,6 +7,7 @@ onready var hands = $Hands
 onready var deck_obj = $Deck
 onready var discard_pile_obj = $Discard
 onready var main_hand_pos = $MainHandPosition
+onready var color_selector = $"UI/Color Picker"
 
 var players = {}
 var deck = []
@@ -27,8 +28,8 @@ func _ready():
 	_generate_deck()
 	shuffle(deck)
 
-	# players[1].draw(1)
-	# players[2].draw(1)
+	players[1].draw(2)
+	players[2].draw(2)
 
 	discard(pop_deck())
 
@@ -131,6 +132,11 @@ func _on_card_played(card, _p):
 	processing_card = card
 
 	# process card effects when played, before passing turn
+	if card.color == Utils.CardColor.BLACK:
+		color_selector.show()
+		var color = yield(color_selector, "color_picked")
+		card.color = color
+		color_selector.hide()
 
 	next_player()
 

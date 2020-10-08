@@ -28,6 +28,11 @@ func card_type_for_symbol(symbol_name: String):
 		return CardType[symbol_name.to_upper()]
 	return CardType.NONE
 
+func color_type_from_value(color: Color):
+	for k in CardColor:
+		if Color8(color.r8, color.g8, color.b8) == COLORS[k]:
+			return CardColor[k]
+
 func is_card_playable(card, top_card):
 	if top_card.color == CardColor.BLACK || card.color == CardColor.BLACK:
 		return true
