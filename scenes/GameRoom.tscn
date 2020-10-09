@@ -14,7 +14,7 @@ extents = Vector3( 0.6, 0.85, 1.1 )
 script = ExtResource( 2 )
 
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 14.9158, 10.5736 )
+transform = Transform( 1, 0, 0, 0, 0.71934, 0.694658, 0, -0.694658, 0.71934, 0, 15.9158, 11.5736 )
 fov = 20.0
 
 [node name="MainHandPosition" type="Position3D" parent="."]
@@ -29,7 +29,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -5 )
 [node name="Hands" type="Spatial" parent="."]
 
 [node name="Player Hand" parent="Hands" instance=ExtResource( 1 )]
-transform = Transform( -1, -6.18173e-08, -6.18172e-08, 0, 0.707107, -0.707107, 8.74228e-08, -0.707107, -0.707107, 0, 0, -1 )
+transform = Transform( -1, -6.18173e-08, -6.18172e-08, 0, 0.707107, -0.707107, 8.74228e-08, -0.707107, -0.707107, 0, 1.64998, 0 )
 player_id = 1
 controller_path = NodePath("../..")
 deck_path = NodePath("../../Deck")
@@ -39,7 +39,7 @@ color = 2
 symbol = "1"
 
 [node name="Player Hand2" parent="Hands" instance=ExtResource( 1 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0379257, 0.0543957, -9.0279 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -10 )
 player_id = 2
 controller_path = NodePath("../..")
 deck_path = NodePath("../../Deck")
@@ -49,7 +49,7 @@ color = 0
 symbol = "1"
 
 [node name="Player Hand3" parent="Hands" instance=ExtResource( 1 )]
-transform = Transform( 0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -5.03793, 0.0543957, -5.0279 )
+transform = Transform( 0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -5.03793, 0, -5.0279 )
 player_id = 3
 controller_path = NodePath("../..")
 deck_path = NodePath("../../Deck")
@@ -59,7 +59,7 @@ color = 0
 symbol = "1"
 
 [node name="Player Hand4" parent="Hands" instance=ExtResource( 1 )]
-transform = Transform( 0.866025, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866025, 4.96207, 0.0543957, -5.0279 )
+transform = Transform( 0.866025, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866025, 4.96207, 0, -5.0279 )
 player_id = 4
 controller_path = NodePath("../..")
 deck_path = NodePath("../../Deck")
@@ -88,7 +88,7 @@ color = 3
 symbol = "1"
 
 [node name="Discard" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0, -4.5 )
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 1, -4 )
 
 [node name="Card" parent="Discard" instance=ExtResource( 3 )]
 color = 1

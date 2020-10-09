@@ -6,7 +6,11 @@ var card_scene = preload("res://scenes/Card.tscn")
 onready var hands = $Hands
 onready var deck_obj = $Deck
 onready var discard_pile_obj = $Discard
-onready var main_hand_pos = $MainHandPosition
+
+onready var main_hand_pos = $MainHandPosition.transform.origin
+onready var left_hand_pos = $LeftHandPosition.transform.origin
+onready var right_hand_pos = $RightHandPosition.transform.origin
+
 onready var color_selector = $"UI/Color Picker"
 
 var players = {}
@@ -32,8 +36,9 @@ func _ready():
 	players[1].max_width = 8
 	players[1].max_space_between_cards = 0.6
 
+	space_out_players()
 	for p in players.values():
-		p.draw(6)
+		p.draw(3)
 
 	discard(pop_deck())
 
@@ -43,8 +48,9 @@ func instance_new_player(player_id):
 	var p = player_scene.instance()
 	p.player_id = player_id
 	p.controller_path = get_path()
+	p.deck_path = deck_obj.get_path()
 	hands.add_child(p)
-	p.transform.origin = main_hand_pos.transform.origin
+	p.transform.origin = main_hand_pos
 
 	_setup_player(p)
 
@@ -53,6 +59,19 @@ func _setup_player(p):
 	p.connect("drawn", self, "_on_cards_drawn", [p])
 	p.connect("playable_changed", self, "_on_playable_cards_changed", [p])
 	p.connect("card_played", self, "_on_card_played", [p])
+
+func space_out_players():
+	var angle_diff = 180 / (players.size() - 2)
+	var angle = 0
+	var circle_center = left_hand_pos + (right_hand_pos - left_hand_pos)/2
+	var polar_zero = right_hand_pos - circle_center
+
+	for i in range(2, players.size() + 1):
+		var p = players[i]
+		p.transform.origin = polar_zero.rotated(Vector3.UP, deg2rad(angle)) + circle_center
+		p.transform.basis = Basis()
+		p.rotate_y(deg2rad(angle/3 - 30))
+		angle += angle_diff
 
 func clear(stack: Array, stack_obj: Node):
 	stack.clear()
