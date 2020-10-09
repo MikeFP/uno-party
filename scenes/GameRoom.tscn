@@ -20,6 +20,12 @@ fov = 20.0
 [node name="MainHandPosition" type="Position3D" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1 )
 
+[node name="LeftHandPosition" type="Position3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -5 )
+
+[node name="RightHandPosition" type="Position3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -5 )
+
 [node name="Hands" type="Spatial" parent="."]
 
 [node name="Player Hand" parent="Hands" instance=ExtResource( 1 )]
@@ -42,8 +48,28 @@ deck_path = NodePath("../../Deck")
 color = 0
 symbol = "1"
 
+[node name="Player Hand3" parent="Hands" instance=ExtResource( 1 )]
+transform = Transform( 0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -5.03793, 0.0543957, -5.0279 )
+player_id = 3
+controller_path = NodePath("../..")
+deck_path = NodePath("../../Deck")
+
+[node name="Card" parent="Hands/Player Hand3" instance=ExtResource( 3 )]
+color = 0
+symbol = "1"
+
+[node name="Player Hand4" parent="Hands" instance=ExtResource( 1 )]
+transform = Transform( 0.866025, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866025, 4.96207, 0.0543957, -5.0279 )
+player_id = 4
+controller_path = NodePath("../..")
+deck_path = NodePath("../../Deck")
+
+[node name="Card" parent="Hands/Player Hand4" instance=ExtResource( 3 )]
+color = 0
+symbol = "1"
+
 [node name="Deck" type="Area" parent="."]
-transform = Transform( -0.707107, 0.707107, 2.02625e-07, -6.18172e-08, 2.24738e-07, -1, -0.707107, -0.707107, -1.15202e-07, -3.01215, -1.74846e-07, -7.62231 )
+transform = Transform( -0.707107, -0.707107, 3.09086e-08, 0, -4.37114e-08, -1, 0.707107, -0.707107, 3.09086e-08, -3.01215, -1.74846e-07, -7.62231 )
 monitoring = false
 monitorable = false
 script = ExtResource( 4 )

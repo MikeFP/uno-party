@@ -17,6 +17,7 @@ var player
 var processing_card
 
 var current = 0
+var order_reversed = false
 
 func _ready():
 	for h in hands.get_children():
@@ -28,8 +29,11 @@ func _ready():
 	_generate_deck()
 	shuffle(deck)
 
-	players[1].draw(2)
-	players[2].draw(2)
+	players[1].max_width = 8
+	players[1].max_space_between_cards = 0.6
+
+	for p in players.values():
+		p.draw(6)
 
 	discard(pop_deck())
 
@@ -137,6 +141,9 @@ func _on_card_played(card, _p):
 		var color = yield(color_selector, "color_picked")
 		card.color = color
 		color_selector.hide()
+	
+	if card.type == Utils.CardType.REVERSE && players.size() > 2:
+		order_reversed = !order_reversed
 
 	next_player()
 
@@ -153,7 +160,7 @@ func _on_card_played(card, _p):
 		next_player()
 	elif card.type == Utils.CardType.REVERSE && players.size() == 2:
 		next_player()
-	
+
 	yield(get_tree(), "idle_frame")
 	player.start_turn()
 
@@ -161,7 +168,9 @@ func next_player():
 	if current > 0:
 		player.end_turn()
 
-	current += 1
+	current += -1 if order_reversed else 1
+	if current < 1:
+		current = players.size()
 	if current > players.size():
 		current = 1
 	player = players[current]

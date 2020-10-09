@@ -11,7 +11,8 @@ var playable = []
 
 var highlighted_card
 
-var max_space_between_cards = 0.6
+var max_space_between_cards = 0.35
+var max_width = 4
 
 var can_play = false
 
@@ -61,7 +62,7 @@ func add_card(card):
 		card.hl_area.connect("mouse_entered", self, "_on_mouse_entered_hl_area", [card])
 		card.hl_area.connect("input_event", self, "_on_card_click", [card])
 
-		_space_cards()
+		space_out()
 		_update_playable()
 
 func remove_card(card):
@@ -75,7 +76,7 @@ func remove_card(card):
 		card.disable_highlight()
 		card.enable_area()
 
-		_space_cards()
+		space_out()
 
 func draw(amount := 1):
 	var new_cards = []
@@ -85,15 +86,19 @@ func draw(amount := 1):
 		new_cards.append(c)
 	emit_signal("drawn", new_cards)
 
-func _space_cards():
+func space_out():
 	if cards.size() > 0:
 		var width = (cards.size() - 1) * max_space_between_cards + 1.0
+		var sbc = max_space_between_cards if width < max_width else ((max_width - 1.0)/(cards.size() - 1))
+		
+		width = min(width, max_width)
+
 		var x = -width/2 + 0.5
 		var i = cards.size() - 1
 		for c in cards:
 			c.transform.origin.x = x
 			c.transform.origin.z = - i * 0.01
-			x += max_space_between_cards
+			x += sbc
 			i -= 1
 
 func _on_card_click(_camera, event, _click_pos, _normal, _shape, card):
