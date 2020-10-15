@@ -40,8 +40,15 @@ func _ready():
 
 func _handle_deck_input(_camera, event, _click_pos, _normal, _shape):
 	if event is InputEventMouseButton && event.pressed:
-		if can_draw():
-			draw()
+		if can_draw() && GameState.player_id == player_id:
+			if not get_tree().is_network_server():
+				rpc_id(1, "handle_draw")
+			else:
+				handle_draw()
+
+remote func handle_draw():
+	if can_draw():
+		rpc("draw")
 
 func can_draw():
 	return can_play && playable.size() == 0
@@ -60,13 +67,15 @@ func _update_playable():
 	if controller.pile.size() > 0:
 		playable = Utils.get_playable_cards(cards, controller.top_card())
 		emit_signal("playable_changed", playable)
-		for c in playable:
-			c.enable_highlight()
+
+		if player_id == GameState.player_id:
+			for c in playable:
+				c.enable_highlight()
 
 func add_card(card):
 	if !cards.has(card):
 
-		if uno:
+		if cards.size() > 0:
 			uno = false
 
 		cards.append(card)
@@ -95,7 +104,7 @@ func remove_card(card):
 
 		space_out()
 
-func draw(amount := 1):
+remotesync func draw(amount := 1):
 	var new_cards = []
 	for _i in range(amount):
 		var c = controller.pop_deck()
@@ -119,8 +128,15 @@ func space_out():
 			i -= 1
 
 func _on_card_click(_camera, event, _click_pos, _normal, _shape, card):
-	if can_play && playable.has(card) && event is InputEventMouseButton && event.pressed:
-		play_card(card)
+	if can_play && playable.has(card) && event is InputEventMouseButton && event.pressed && GameState.player_id == player_id:
+		if not get_tree().is_network_server():
+			rpc_id(1, "handle_play_card", card.name)
+		else:
+			handle_play_card(card.name)
+
+remote func handle_play_card(card_name):
+	if can_play:
+		rpc("play_card", card_name)
 
 func _on_mouse_entered_hl_area(card):
 	if highlighted_card == null && card in playable:
@@ -143,18 +159,20 @@ func highlight_card(card):
 	card.transform.origin.y = 0.5
 	card.hl_area.connect("mouse_exited", self, "_on_mouse_exited", [card])
 
-func play_card(card):
-	if cards.has(card):
+remotesync func play_card(card_name):
+	if has_node(card_name):
+		var card = get_node(card_name)
 		remove_card(card)
 		controller.discard(card)
+		can_play = false
 		played_turn = true
+		stop_highlight()
+		for c in playable:
+			c.disable_highlight()
 		emit_signal("card_played", card)
 
 func end_turn():
 	stop_highlight()
-	can_play = false
-	for c in playable:
-		c.disable_highlight()
 	playable = []
 	emit_signal("playable_changed", playable)
 
@@ -164,18 +182,37 @@ func has_to_uno():
 func can_uno():
 	return !uno && cards.size() == 2 && can_play && playable.size() > 0
 
-func call_uno():
+remotesync func call_uno():
 	uno = true
+	print("uno called")
 	emit_signal("uno_called")
 
-func call_out_uno():
+remotesync func call_out_uno():
+	print("uno called out")
 	emit_signal("called_out_uno")
+
+remote func handle_call_uno():
+	if can_uno():
+		rpc("call_uno")
+
+remote func handle_call_out_uno():
+	if controller.player.has_to_uno() && player_id != controller.player.player_id:
+		rpc("call_out_uno")
 
 func _uno_pressed():
 	if can_uno():
-		call_uno()
+		if not get_tree().is_network_server():
+			rpc_id(1, "handle_call_uno")
+		else:
+			handle_call_uno()
 	elif controller.player.has_to_uno():
 		if player_id == controller.player.player_id:
-			call_uno()
+			if not get_tree().is_network_server():
+				rpc_id(1, "handle_call_uno")
+			else:
+				handle_call_uno()
 		else:
-			call_out_uno()
+			if not get_tree().is_network_server():
+				rpc_id(1, "handle_call_out_uno")
+			else:
+				handle_call_out_uno()

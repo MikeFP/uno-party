@@ -14,6 +14,7 @@ const COLORS = {
 var symbols_map = {}
 
 var card_scene = preload("res://scenes/Card.tscn")
+var card_id = 0
 
 func enum_to_string(enum_type, value):
 	return enum_type.keys()[value]
@@ -50,35 +51,32 @@ func get_playable_cards(cards, top_card):
 			res.append(card)
 	return res
 
+func get_new_card_id():
+	card_id += 1
+	return card_id
+
 func instance_card(symbol_name: String, color: int):
 	var card = card_scene.instance()
 	card.symbol = symbol_name
 	card.color = color
+	card.name = str(get_new_card_id())
 	return card
 
 func generate_deck():
-	var deck = {
-		"symbols": [],
-		"colors": []
-	}
+	var deck = []
+
 	for color in Utils.CardColor.values().slice(0, -2):
 		for i in range(10):
-			deck["symbols"].append(str(i))
-			deck["colors"].append(color)
+			deck.append(instance_card(str(i), color))
 		for _i in range(2):
-			deck["symbols"].append("block")
-			deck["colors"].append(color)
-			deck["symbols"].append("reverse")
-			deck["colors"].append(color)
-			deck["symbols"].append("plus2")
-			deck["colors"].append(color)
+			deck.append(instance_card("block", color))
+			deck.append(instance_card("reverse", color))
+			deck.append(instance_card("plus2", color))
 	
 	for _i in range(4):
-		deck["symbols"].append("plus4")
-		deck["colors"].append(Utils.CardColor.BLACK)
-		deck["symbols"].append("wildcard")
-		deck["colors"].append(Utils.CardColor.BLACK)
-	
+		deck.append(instance_card("plus4", Utils.CardColor.BLACK))
+		deck.append(instance_card("wildcard", Utils.CardColor.BLACK))
+
 	return deck
 
 func randomize_seed():

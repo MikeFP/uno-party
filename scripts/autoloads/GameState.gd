@@ -96,19 +96,19 @@ func begin_game():
 	assert(get_tree().is_network_server())
 	
 	var player_ids = [1] + players.keys()
-	var deck = Utils.generate_deck()
+	var ss = Utils.randomize_seed()
 
-	rpc("pre_start_game", player_ids, deck)
-	pre_start_game(player_ids, deck)
+	rpc("pre_start_game", player_ids, ss)
+	pre_start_game(player_ids, ss)
 
-remote func pre_start_game(player_ids, deck):
+remote func pre_start_game(player_ids, ss):
 	room = room_scene.instance()
 	get_tree().get_root().add_child(room)
 	get_node("/root/Lobby").hide()
 
 	for p in player_ids:
 		room.instance_new_player(p)
-	room.insert_in_deck(deck)
+	room.shuffle_deck(ss)
 
 	if not get_tree().is_network_server():
 		# Tell server we are ready to start.

@@ -28,6 +28,8 @@ var processing_card
 var current = -1
 var order_reversed = false
 
+signal color_picked
+
 func _ready():
 	for h in hands.get_children():
 		if GameState.player_name == null && h.player_id == 1:
@@ -35,14 +37,17 @@ func _ready():
 		else:
 			hands.remove_child(h)
 			h.queue_free()
+	
+	color_selector.connect("color_picked", self, "_on_color_picked")
 
 	clear(deck, deck_obj.get_node("Cards"))
 	clear(pile, discard_pile_obj)
 
+	insert_in_deck(Utils.generate_deck())
+
 	if GameState.player_name == null:
 		for i in range(num_players - 1):
 			instance_new_player(i + 2)
-		insert_in_deck(Utils.generate_deck())
 		shuffle_deck(Utils.randomize_seed())
 
 func instance_new_player(player_id):
@@ -104,13 +109,12 @@ func clear(stack: Array, stack_obj: Node):
 		stack_obj.remove_child(c)
 		c.queue_free()
 
-func insert_in_deck(cards_settings, index := -1):
+func insert_in_deck(cards, index := -1):
 	var i = index
 	if index == -1:
 		i = deck.size()
 
-	for c in range(cards_settings["symbols"].size()):
-		var card = Utils.instance_card(cards_settings["symbols"][c], cards_settings["colors"][c])
+	for card in cards:
 		deck.insert(i, card)
 	
 		deck_obj.get_node("Cards").add_child(card)
@@ -150,12 +154,8 @@ remotesync func shuffle_deck(rng_seed: int):
 	_space_stacked_cards(deck)
 
 func start():
-	if get_tree().is_network_server():
-		var s = Utils.randomize_seed()
-		rpc("shuffle_deck", s)
-
 	yield(get_tree().create_timer(2.0), "timeout")
-	for p in players.values():
+	for p in remaining:
 		p.draw(2)
 
 	discard(pop_deck())
@@ -168,27 +168,51 @@ func _on_cards_drawn(_cards, p):
 
 func _on_playable_cards_changed(_playable, p):
 	if p == player:
-		if p.can_draw():
+		if p.can_draw() && GameState.player_id == p.player_id:
 			deck_obj.enable_hover()
 		else:
 			deck_obj.disable_hover()
 
 func _on_card_played(card, p):
+	process_card(card.name, p.player_id)
+
+func _on_color_picked(color):
+	color_selector.hide()
+
+	if not get_tree().is_network_server():
+		rpc_id(1, "handle_color_picked", color)
+	else:
+		handle_color_picked(color)
+
+remote func handle_color_picked(color):
+	rpc("emit_color_picked", color)
+
+remotesync func emit_color_picked(color):
+	emit_signal("color_picked", color)
+
+func process_card(card_name, p_id):
+	var card = discard_pile_obj.get_node(card_name)
+	var p = players[p_id]
+
 	processing_card = card
 
 	# process card effects when played, before passing turn
 	if card.color == Utils.CardColor.BLACK:
-		color_selector.show()
-		var color = yield(color_selector, "color_picked")
+		if player.player_id == GameState.player_id:
+			color_selector.show()
+		var color = yield(self, "color_picked")
 		card.color = color
-		color_selector.hide()
 	
 	if card.type == Utils.CardType.REVERSE && remaining.size() > 2:
 		order_reversed = !order_reversed
-
-	# print("card played " + str(card.symbol))
+	
+	yield(get_tree().create_timer(2.0), "timeout")
+		
+	print("card played " + str(card.symbol))
 	next_player()
-
+	post_process_card(card, p)
+	
+func post_process_card(card, p):
 	var player_removed = false
 	if p.cards.size() == 0:
 		var index = remaining.find(p)
