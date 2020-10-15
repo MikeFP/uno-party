@@ -13,6 +13,8 @@ const COLORS = {
 
 var symbols_map = {}
 
+var card_scene = preload("res://scenes/Card.tscn")
+
 func enum_to_string(enum_type, value):
 	return enum_type.keys()[value]
 
@@ -47,3 +49,40 @@ func get_playable_cards(cards, top_card):
 		if is_card_playable(card, top_card):
 			res.append(card)
 	return res
+
+func instance_card(symbol_name: String, color: int):
+	var card = card_scene.instance()
+	card.symbol = symbol_name
+	card.color = color
+	return card
+
+func generate_deck():
+	var deck = {
+		"symbols": [],
+		"colors": []
+	}
+	for color in Utils.CardColor.values().slice(0, -2):
+		for i in range(10):
+			deck["symbols"].append(str(i))
+			deck["colors"].append(color)
+		for _i in range(2):
+			deck["symbols"].append("block")
+			deck["colors"].append(color)
+			deck["symbols"].append("reverse")
+			deck["colors"].append(color)
+			deck["symbols"].append("plus2")
+			deck["colors"].append(color)
+	
+	for _i in range(4):
+		deck["symbols"].append("plus4")
+		deck["colors"].append(Utils.CardColor.BLACK)
+		deck["symbols"].append("wildcard")
+		deck["colors"].append(Utils.CardColor.BLACK)
+	
+	return deck
+
+func randomize_seed():
+	randomize()
+	var ns = randi()
+	seed(ns)
+	return ns

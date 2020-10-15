@@ -16,12 +16,13 @@ _global_script_class_icons={
 [application]
 
 config/name="Uno Party"
-run/main_scene="res://scenes/GameRoom.tscn"
+run/main_scene="res://scenes/Lobby.tscn"
 config/icon="res://icon.png"
 
 [autoload]
 
 Utils="*res://scripts/autoloads/Utils.gd"
+GameState="*res://scripts/autoloads/GameState.gd"
 
 [rendering]
 

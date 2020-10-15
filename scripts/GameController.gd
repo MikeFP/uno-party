@@ -1,7 +1,6 @@
 extends Node
 
 var player_scene = preload("res://scenes/Player Hand.tscn")
-var card_scene = preload("res://scenes/Card.tscn")
 
 export var num_players := 2
 
@@ -9,7 +8,7 @@ onready var hands = $Hands
 onready var deck_obj = $Deck
 onready var discard_pile_obj = $Discard
 
-onready var main_hand_pos = $MainHandPosition.transform.origin
+onready var main_hand_pos = $MainHandPosition
 onready var left_hand_pos = $LeftHandPosition.transform.origin
 onready var right_hand_pos = $RightHandPosition.transform.origin
 
@@ -31,31 +30,20 @@ var order_reversed = false
 
 func _ready():
 	for h in hands.get_children():
-		if h.player_id == 1:
+		if GameState.player_name == null && h.player_id == 1:
 			_setup_player(h)
 		else:
 			hands.remove_child(h)
 			h.queue_free()
-	
-	for i in range(num_players - 1):
-		instance_new_player(i + 2)
 
 	clear(deck, deck_obj.get_node("Cards"))
 	clear(pile, discard_pile_obj)
 
-	_generate_deck()
-	shuffle(deck)
-
-	players[1].max_width = 8
-	players[1].max_space_between_cards = 0.6
-
-	space_out_players()
-	for p in players.values():
-		p.draw(2)
-
-	discard(pop_deck())
-
-	start()
+	if GameState.player_name == null:
+		for i in range(num_players - 1):
+			instance_new_player(i + 2)
+		insert_in_deck(Utils.generate_deck())
+		shuffle_deck(Utils.randomize_seed())
 
 func instance_new_player(player_id):
 	var p = player_scene.instance()
@@ -64,9 +52,17 @@ func instance_new_player(player_id):
 	p.deck_path = deck_obj.get_path()
 	p.uno_path = uno_button.get_path()
 	hands.add_child(p)
-	p.transform.origin = main_hand_pos
+
+	if player_id == GameState.player_id:
+		p.transform = main_hand_pos.transform
+		p.max_width = 8
+		p.max_space_between_cards = 0.6
+	else:
+		p.transform.origin = right_hand_pos
 
 	_setup_player(p)
+	print("player " + str(player_id) + " instanced")
+	space_out_players()
 
 func _setup_player(p):
 	players[p.player_id] = p
@@ -78,6 +74,9 @@ func _setup_player(p):
 	p.connect("called_out_uno", self, "_on_uno_called_out", [p])
 
 func space_out_players():
+	if players.size() == 1:
+		return
+	
 	var angle_diff = 0
 	var angle = 90
 	
@@ -88,11 +87,12 @@ func space_out_players():
 	var circle_center = left_hand_pos + (right_hand_pos - left_hand_pos)/2
 	var polar_zero = right_hand_pos - circle_center
 
-	var other = order
-	other.remove(other.find(1)) # replace with client id
+	var turn_index = order.find(GameState.player_id)
 
-	for i in other:
-		var p = players[i]
+	for i in range(1, order.size()):
+		var index = (turn_index + i) % order.size()
+
+		var p = players[order[index]]
 		p.transform.origin = polar_zero.rotated(Vector3.UP, deg2rad(angle)) + circle_center
 		p.transform.basis = Basis()
 		p.rotate_y(deg2rad(angle/3 - 30))
@@ -104,35 +104,22 @@ func clear(stack: Array, stack_obj: Node):
 		stack_obj.remove_child(c)
 		c.queue_free()
 
-func _generate_deck():
-	for color in Utils.CardColor.values().slice(0, -2):
-		for i in range(10):
-			insert_in_deck(_instance_card(str(i), color))
-		for _i in range(2):
-			insert_in_deck(_instance_card("block", color))
-			insert_in_deck(_instance_card("reverse", color))
-			insert_in_deck(_instance_card("plus2", color))
-	
-	for _i in range(4):
-		insert_in_deck(_instance_card("plus4", Utils.CardColor.BLACK))
-		insert_in_deck(_instance_card("wildcard", Utils.CardColor.BLACK))
-
-func _instance_card(symbol_name: String, color: int):
-	var card = card_scene.instance()
-	card.symbol = symbol_name
-	card.color = color
-	return card
-
-func insert_in_deck(card, index := -1):
+func insert_in_deck(cards_settings, index := -1):
+	var i = index
 	if index == -1:
-		deck.append(card)
-	else:
-		deck.insert(index, card)
-	
-	deck_obj.get_node("Cards").add_child(card)
-	deck_obj.get_node("CollisionShape").scale.z = deck.size() * 0.01 + 0.1
+		i = deck.size()
 
-	card.face_down()
+	for c in range(cards_settings["symbols"].size()):
+		var card = Utils.instance_card(cards_settings["symbols"][c], cards_settings["colors"][c])
+		deck.insert(i, card)
+	
+		deck_obj.get_node("Cards").add_child(card)
+		deck_obj.get_node("CollisionShape").scale.z = deck.size() * 0.01 + 0.1
+		
+		card.face_down()
+
+		i += 1
+
 	_space_stacked_cards(deck)
 
 func pop_deck():
@@ -157,12 +144,22 @@ func discard(card):
 	card.face_up()
 	_space_stacked_cards(pile)
 
-func shuffle(stack):
-	randomize()
-	stack.shuffle()
-	_space_stacked_cards(stack)
+remotesync func shuffle_deck(rng_seed: int):
+	seed(rng_seed)
+	deck.shuffle()
+	_space_stacked_cards(deck)
 
 func start():
+	if get_tree().is_network_server():
+		var s = Utils.randomize_seed()
+		rpc("shuffle_deck", s)
+
+	yield(get_tree().create_timer(2.0), "timeout")
+	for p in players.values():
+		p.draw(2)
+
+	discard(pop_deck())
+
 	next_player()
 
 func _on_cards_drawn(_cards, p):

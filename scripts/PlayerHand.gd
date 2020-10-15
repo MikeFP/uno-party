@@ -29,7 +29,12 @@ signal called_out_uno
 
 func _ready():
 	for c in get_children():
-		add_card(c)
+		if GameState.player_name == null:
+			add_card(c)
+		else:
+			remove_child(c)
+			c.queue_free()
+
 	deck_obj.connect("input_event", self, "_handle_deck_input")
 	uno_button.connect("pressed", self, "_uno_pressed")
 
