@@ -40,11 +40,14 @@ func _ready():
 
 func _handle_deck_input(_camera, event, _click_pos, _normal, _shape):
 	if event is InputEventMouseButton && event.pressed:
-		if can_draw() && GameState.player_id == player_id:
-			if not get_tree().is_network_server():
-				rpc_id(1, "handle_draw")
-			else:
-				handle_draw()
+		if can_draw():
+			if GameState.player_name == null && controller.player == self:
+				draw()
+			elif GameState.player_id == player_id:
+				if not get_tree().is_network_server():
+					rpc_id(1, "handle_draw")
+				else:
+					handle_draw()
 
 remote func handle_draw():
 	if can_draw():
@@ -64,11 +67,11 @@ func start_turn():
 	_update_playable()
 
 func _update_playable():
-	if controller.pile.size() > 0:
+	if controller.pile.size() > 0 && can_play:
 		playable = Utils.get_playable_cards(cards, controller.top_card())
 		emit_signal("playable_changed", playable)
 
-		if player_id == GameState.player_id:
+		if GameState.player_name == null || player_id == GameState.player_id:
 			for c in playable:
 				c.enable_highlight()
 
@@ -128,11 +131,14 @@ func space_out():
 			i -= 1
 
 func _on_card_click(_camera, event, _click_pos, _normal, _shape, card):
-	if can_play && playable.has(card) && event is InputEventMouseButton && event.pressed && GameState.player_id == player_id:
-		if not get_tree().is_network_server():
-			rpc_id(1, "handle_play_card", card.name)
-		else:
-			handle_play_card(card.name)
+	if can_play && playable.has(card) && event is InputEventMouseButton && event.pressed:
+		if GameState.player_name == null:
+			play_card(card.name)
+		elif GameState.player_id == player_id:
+			if not get_tree().is_network_server():
+				rpc_id(1, "handle_play_card", card.name)
+			else:
+				handle_play_card(card.name)
 
 remote func handle_play_card(card_name):
 	if can_play:
@@ -174,6 +180,8 @@ remotesync func play_card(card_name):
 func end_turn():
 	stop_highlight()
 	playable = []
+	for c in cards:
+		c.disable_highlight()
 	emit_signal("playable_changed", playable)
 
 func has_to_uno():
@@ -201,18 +209,27 @@ remote func handle_call_out_uno():
 
 func _uno_pressed():
 	if can_uno():
-		if not get_tree().is_network_server():
-			rpc_id(1, "handle_call_uno")
+		if GameState.player_name == null:
+			call_uno()
 		else:
-			handle_call_uno()
-	elif controller.player.has_to_uno():
-		if player_id == controller.player.player_id:
 			if not get_tree().is_network_server():
 				rpc_id(1, "handle_call_uno")
 			else:
 				handle_call_uno()
-		else:
-			if not get_tree().is_network_server():
-				rpc_id(1, "handle_call_out_uno")
+	elif controller.player.has_to_uno():
+		if player_id == controller.player.player_id:
+			if GameState.player_name == null:
+				call_uno()
 			else:
-				handle_call_out_uno()
+				if not get_tree().is_network_server():
+					rpc_id(1, "handle_call_uno")
+				else:
+					handle_call_uno()
+		else:
+			if GameState.player_name == null:
+				call_out_uno()
+			else:
+				if not get_tree().is_network_server():
+					rpc_id(1, "handle_call_out_uno")
+				else:
+					handle_call_out_uno()

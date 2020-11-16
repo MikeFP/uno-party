@@ -14,6 +14,7 @@ onready var right_hand_pos = $RightHandPosition.transform.origin
 
 onready var color_selector = $"UI/Color Picker"
 onready var uno_button = $"UI/UNO Button"
+onready var turn_flow = $"Environment/Turn Flow"
 
 var players = {}
 var remaining = []
@@ -26,17 +27,18 @@ var player
 var processing_card
 
 var current = -1
-var order_reversed = false
+var order_reversed = false setget set_order_reversed
 
 signal color_picked
 
 func _ready():
-	for h in hands.get_children():
-		if GameState.player_name == null && h.player_id == 1:
-			_setup_player(h)
-		else:
-			hands.remove_child(h)
-			h.queue_free()
+	if GameState.player_name == null:
+		for h in hands.get_children():
+			if h.player_id == 1:
+				_setup_player(h)
+			else:
+				hands.remove_child(h)
+				h.queue_free()
 	
 	color_selector.connect("color_picked", self, "_on_color_picked")
 
@@ -49,6 +51,7 @@ func _ready():
 		for i in range(num_players - 1):
 			instance_new_player(i + 2)
 		shuffle_deck(Utils.randomize_seed())
+		start()
 
 func instance_new_player(player_id):
 	var p = player_scene.instance()
@@ -92,7 +95,8 @@ func space_out_players():
 	var circle_center = left_hand_pos + (right_hand_pos - left_hand_pos)/2
 	var polar_zero = right_hand_pos - circle_center
 
-	var turn_index = order.find(GameState.player_id)
+	var current_player_id = 1 if GameState.player_name == null else GameState.player_id
+	var turn_index = order.find(current_player_id)
 
 	for i in range(1, order.size()):
 		var index = (turn_index + i) % order.size()
@@ -168,7 +172,7 @@ func _on_cards_drawn(_cards, p):
 
 func _on_playable_cards_changed(_playable, p):
 	if p == player:
-		if p.can_draw() && GameState.player_id == p.player_id:
+		if p.can_draw() && (GameState.player_name == null || GameState.player_id == p.player_id):
 			deck_obj.enable_hover()
 		else:
 			deck_obj.disable_hover()
@@ -179,10 +183,13 @@ func _on_card_played(card, p):
 func _on_color_picked(color):
 	color_selector.hide()
 
-	if not get_tree().is_network_server():
-		rpc_id(1, "handle_color_picked", color)
+	if GameState.player_name == null:
+		emit_color_picked(color)
 	else:
-		handle_color_picked(color)
+		if not get_tree().is_network_server():
+			rpc_id(1, "handle_color_picked", color)
+		else:
+			handle_color_picked(color)
 
 remote func handle_color_picked(color):
 	rpc("emit_color_picked", color)
@@ -198,13 +205,13 @@ func process_card(card_name, p_id):
 
 	# process card effects when played, before passing turn
 	if card.color == Utils.CardColor.BLACK:
-		if player.player_id == GameState.player_id:
+		if GameState.player_name == null || player.player_id == GameState.player_id:
 			color_selector.show()
 		var color = yield(self, "color_picked")
 		card.color = color
 	
 	if card.type == Utils.CardType.REVERSE && remaining.size() > 2:
-		order_reversed = !order_reversed
+		set_order_reversed(!order_reversed)
 	
 	yield(get_tree().create_timer(2.0), "timeout")
 		
@@ -249,7 +256,7 @@ func next_player():
 		current = 0
 	player = remaining[current]
 
-	# print("now its player " + str(player.player_id))
+	print("now its player " + str(player.player_id))
 
 	if processing_card == null:
 		yield(get_tree(), "idle_frame")
@@ -257,3 +264,10 @@ func next_player():
 
 func _on_uno_called_out(_p):
 	player.draw(2)
+
+func set_order_reversed(value):
+	order_reversed = value
+	turn_flow.angular_velocity = -turn_flow.angular_velocity
+
+	var uv_scale = turn_flow.mesh.material.uv1_scale
+	turn_flow.mesh.material.uv1_scale = Vector3(-uv_scale.x,1,1)
