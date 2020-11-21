@@ -62,7 +62,7 @@ func instance_card(symbol_name: String, color: int):
 	card.name = str(get_new_card_id())
 	return card
 
-func generate_deck():
+func generate_deck(force_cards: Array = []):
 	var deck = []
 
 	for color in Utils.CardColor.values().slice(0, -2):
@@ -76,6 +76,11 @@ func generate_deck():
 	for _i in range(4):
 		deck.append(instance_card("plus4", Utils.CardColor.BLACK))
 		deck.append(instance_card("wildcard", Utils.CardColor.BLACK))
+
+	var i = 0
+	for c in force_cards:
+		deck[deck.size() - 1 - i] = instance_card(c.split(" ")[0], Utils.CardColor[c.split(" ")[1]])
+		i += 1
 
 	return deck
 

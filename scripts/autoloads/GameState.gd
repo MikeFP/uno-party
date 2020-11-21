@@ -54,6 +54,11 @@ func _connected_fail():
 func get_players():
 	return players.values()
 
+func get_player_by_id(id):
+	if players.has(id) :
+		return players[id]
+	return null
+
 func host_game(nickname):
 	player_name = nickname
 	player_id = 1

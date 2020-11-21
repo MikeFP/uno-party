@@ -3,6 +3,7 @@ extends Node
 var player_scene = preload("res://scenes/Player Hand.tscn")
 
 export var num_players := 2
+var force_cards = []
 
 onready var hands = $Hands
 onready var deck_obj = $Deck
@@ -45,12 +46,15 @@ func _ready():
 	clear(deck, deck_obj.get_node("Cards"))
 	clear(pile, discard_pile_obj)
 
-	insert_in_deck(Utils.generate_deck())
+	# for _i in range(30):
+	# 	force_cards.append("reverse RED")
+	insert_in_deck(Utils.generate_deck(force_cards))
 
 	if GameState.player_name == null:
 		for i in range(num_players - 1):
 			instance_new_player(i + 2)
-		shuffle_deck(Utils.randomize_seed())
+		if force_cards.size() == 0:
+			shuffle_deck(Utils.randomize_seed())
 		start()
 
 func instance_new_player(player_id):
@@ -97,6 +101,7 @@ func space_out_players():
 
 	var current_player_id = 1 if GameState.player_name == null else GameState.player_id
 	var turn_index = order.find(current_player_id)
+	players[current_player_id].ui_position = "center none"
 
 	for i in range(1, order.size()):
 		var index = (turn_index + i) % order.size()
@@ -105,6 +110,10 @@ func space_out_players():
 		p.transform.origin = polar_zero.rotated(Vector3.UP, deg2rad(angle)) + circle_center
 		p.transform.basis = Basis()
 		p.rotate_y(deg2rad(angle/3 - 30))
+		if angle > 90:
+			p.ui_position = "top left"
+		else:
+			p.ui_position = "top right"
 		angle += angle_diff
 
 func clear(stack: Array, stack_obj: Node):
@@ -160,7 +169,7 @@ remotesync func shuffle_deck(rng_seed: int):
 func start():
 	yield(get_tree().create_timer(2.0), "timeout")
 	for p in remaining:
-		p.draw(2)
+		p.draw(7)
 
 	discard(pop_deck())
 
@@ -268,6 +277,7 @@ func _on_uno_called_out(_p):
 func set_order_reversed(value):
 	order_reversed = value
 	turn_flow.angular_velocity = -turn_flow.angular_velocity
+	turn_flow.current_angle = turn_flow.current_angle + (-45 if !order_reversed else 45)
 
 	var uv_scale = turn_flow.mesh.material.uv1_scale
 	turn_flow.mesh.material.uv1_scale = Vector3(-uv_scale.x,1,1)

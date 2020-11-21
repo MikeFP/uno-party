@@ -1,5 +1,7 @@
 extends Spatial
 
+var name_control_scene = preload("res://scenes/ui/PlayerName.tscn")
+
 export var player_id := 0
 export var controller_path: NodePath
 export var deck_path: NodePath
@@ -8,6 +10,9 @@ export var uno_path: NodePath
 onready var controller = get_node(controller_path)
 onready var deck_obj = get_node(deck_path)
 onready var uno_button = get_node(uno_path)
+
+var name_ui
+var ui_position = "top center"
 
 var cards = []
 var playable = []
@@ -28,7 +33,7 @@ signal uno_called
 signal called_out_uno
 
 func _ready():
-	for c in get_children():
+	for c in $Cards.get_children():
 		if GameState.player_name == null:
 			add_card(c)
 		else:
@@ -38,6 +43,37 @@ func _ready():
 	deck_obj.connect("input_event", self, "_handle_deck_input")
 	uno_button.connect("pressed", self, "_uno_pressed")
 
+	if has_node("PlayerName"):
+		name_ui = get_node("PlayerName")
+	else:
+		name_ui = name_control_scene.instance()
+		add_child(name_ui)
+	
+	name_ui.get_node("Label").text = ("Player " + str(player_id)) if GameState.player_name == null else GameState.get_player_by_id(player_id)
+
+func _process(_delta):
+	var y_shift = 0
+	var x_shift = 0
+	var vert_just = ui_position.split(" ")[0]
+	var hor_just = ui_position.split(" ")[1]
+	if vert_just == "bottom":
+		y_shift = -1
+	if vert_just == "top":
+		y_shift = 1
+	if hor_just == "left":
+		x_shift = -1
+	if hor_just == "right":
+		x_shift = 1
+	
+	var shift = Vector3(x_shift, y_shift, 0)
+	var old_pos = name_ui.rect_position
+	var world_pos = get_viewport().get_camera().unproject_position(transform.origin + shift)
+	name_ui.rect_position = world_pos - name_ui.rect_size / 2
+	if vert_just == "none":
+		name_ui.rect_position.y = old_pos.y
+	if hor_just == "none":
+		name_ui.rect_position.x = old_pos.x
+		
 func _handle_deck_input(_camera, event, _click_pos, _normal, _shape):
 	if event is InputEventMouseButton && event.pressed:
 		if can_draw():
@@ -64,6 +100,7 @@ func lookat_camera():
 func start_turn():
 	can_play = true
 	played_turn = false
+	name_ui["custom_styles/panel"].modulate_color = Color8(251, 157, 59)
 	_update_playable()
 
 func _update_playable():
@@ -82,8 +119,8 @@ func add_card(card):
 			uno = false
 
 		cards.append(card)
-		if !get_children().has(card):
-			add_child(card)
+		if !$Cards.get_children().has(card):
+			$Cards.add_child(card)
 			card.transform.basis = Basis()
 
 		card.face_up()
@@ -98,8 +135,8 @@ func remove_card(card):
 	var i = cards.find(card)
 	if i != -1:
 		cards.remove(i)
-		if get_children().has(card):
-			remove_child(card)
+		if $Cards.get_children().has(card):
+			$Cards.remove_child(card)
 		card.hl_area.disconnect("mouse_entered", self, "_on_mouse_entered_hl_area")
 		card.hl_area.disconnect("input_event", self, "_on_card_click")
 		card.disable_highlight()
@@ -166,8 +203,8 @@ func highlight_card(card):
 	card.hl_area.connect("mouse_exited", self, "_on_mouse_exited", [card])
 
 remotesync func play_card(card_name):
-	if has_node(card_name):
-		var card = get_node(card_name)
+	if $Cards.has_node(card_name):
+		var card = $Cards.get_node(card_name)
 		remove_card(card)
 		controller.discard(card)
 		can_play = false
@@ -180,6 +217,7 @@ remotesync func play_card(card_name):
 func end_turn():
 	stop_highlight()
 	playable = []
+	name_ui["custom_styles/panel"].modulate_color = Color8(44, 145, 194)
 	for c in cards:
 		c.disable_highlight()
 	emit_signal("playable_changed", playable)

@@ -1,7 +1,7 @@
 tool
 extends Spatial
 
-export var initial_angle := 0.0
+export var current_angle := 0.0 setget set_angle
 export var angular_velocity := PI
 export var axis := Vector3.UP
 export var node_path: NodePath
@@ -14,4 +14,12 @@ func _ready():
 		node = get_node(node_path)
 
 func _process(delta):
-	node.rotate(axis, angular_velocity * delta)
+	set_angle(current_angle + angular_velocity * delta)
+	if current_angle > 360:
+		current_angle -= 360
+
+func set_angle(angle):
+	node.rotate(axis, -current_angle)
+	current_angle = angle
+	node.rotate(axis, current_angle)
+	
