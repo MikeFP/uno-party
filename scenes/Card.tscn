@@ -72,3 +72,5 @@ collider_path = NodePath("CollisionShape")
 [node name="CollisionShape" type="CollisionShape" parent="Highlight Area"]
 shape = SubResource( 7 )
 disabled = true
+
+[node name="Tween" type="Tween" parent="."]

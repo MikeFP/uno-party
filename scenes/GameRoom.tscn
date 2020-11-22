@@ -52,24 +52,24 @@ albedo_texture = ExtResource( 8 )
 material = SubResource( 8 )
 size = Vector2( 5.5, 5.5 )
 
-[sub_resource type="Gradient" id=11]
+[sub_resource type="Gradient" id=10]
 offsets = PoolRealArray( 0.677966, 0.824859, 1 )
 colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 0.392157, 0.137255, 0.588235, 0.737255, 0 )
 
-[sub_resource type="GradientTexture" id=12]
-gradient = SubResource( 11 )
+[sub_resource type="GradientTexture" id=11]
+gradient = SubResource( 10 )
 
-[sub_resource type="StyleBoxTexture" id=13]
+[sub_resource type="StyleBoxTexture" id=12]
 resource_local_to_scene = true
 content_margin_left = 10.0
 content_margin_right = 40.0
 content_margin_top = 5.0
 content_margin_bottom = 5.0
-texture = SubResource( 12 )
+texture = SubResource( 11 )
 region_rect = Rect2( 0, 0, 2048, 1 )
 modulate_color = Color( 0.137255, 0.588235, 0.737255, 1 )
 
-[sub_resource type="BoxShape" id=10]
+[sub_resource type="BoxShape" id=13]
 extents = Vector3( 0.6, 0.85, 1.1 )
 
 [node name="GameRoom" type="Spatial"]
@@ -95,10 +95,10 @@ process_material = SubResource( 5 )
 draw_pass_1 = SubResource( 7 )
 
 [node name="Turn Flow" type="CSGMesh" parent="Environment"]
-transform = Transform( -0.840399, 0, 0.539304, 0, 1, 0, -0.539304, 0, -0.840399, 0, 0, -5 )
+transform = Transform( -0.924382, 0, 0.377663, 0, 1, 0, -0.377663, 0, -0.924382, 0, 0, -5 )
 mesh = SubResource( 9 )
 script = ExtResource( 9 )
-initial_angle = 0.0
+current_angle = 28.3407
 angular_velocity = 0.524
 
 [node name="MainHandPosition" type="Position3D" parent="."]
@@ -133,7 +133,7 @@ margin_left = -428.0
 margin_top = -100.0
 margin_right = -280.0
 margin_bottom = -72.0
-custom_styles/panel = SubResource( 13 )
+custom_styles/panel = SubResource( 12 )
 
 [node name="Player Hand2" parent="Hands" instance=ExtResource( 1 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -10 )
@@ -178,7 +178,7 @@ collider_path = NodePath("CollisionShape")
 
 [node name="CollisionShape" type="CollisionShape" parent="Deck"]
 transform = Transform( 1, 0, 0, 0, 1, -7.10543e-15, 0, 7.10543e-15, 1, 0, 0, 0 )
-shape = SubResource( 10 )
+shape = SubResource( 13 )
 
 [node name="Cards" type="Spatial" parent="Deck"]
 
@@ -188,7 +188,7 @@ color = 3
 symbol = "1"
 
 [node name="Discard" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0, -5 )
+transform = Transform( -1.25, 1.88745e-07, -6.60024e-15, 0, -5.46392e-08, -1, -1.88745e-07, -1.25, 4.37114e-08, 0, 0, -5 )
 
 [node name="Card" parent="Discard" instance=ExtResource( 3 )]
 color = 1

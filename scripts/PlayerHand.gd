@@ -120,7 +120,7 @@ func add_card(card):
 
 		cards.append(card)
 		if !$Cards.get_children().has(card):
-			$Cards.add_child(card)
+			Utils.reparent(card, $Cards)
 			card.transform.basis = Basis()
 
 		card.face_up()
@@ -148,6 +148,7 @@ remotesync func draw(amount := 1):
 	var new_cards = []
 	for _i in range(amount):
 		var c = controller.pop_deck()
+		yield(c.move_to(self.global_transform.origin, self.global_transform.basis), "completed")
 		add_card(c)
 		new_cards.append(c)
 	emit_signal("drawn", new_cards)
@@ -206,12 +207,16 @@ remotesync func play_card(card_name):
 	if $Cards.has_node(card_name):
 		var card = $Cards.get_node(card_name)
 		remove_card(card)
-		controller.discard(card)
 		can_play = false
 		played_turn = true
 		stop_highlight()
 		for c in playable:
 			c.disable_highlight()
+
+		add_child(card)
+
+		yield (controller.discard(card), "completed")
+
 		emit_signal("card_played", card)
 
 func end_turn():

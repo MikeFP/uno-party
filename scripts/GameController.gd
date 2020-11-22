@@ -141,7 +141,6 @@ func insert_in_deck(cards, index := -1):
 
 func pop_deck():
 	var card = deck.pop_back()
-	deck_obj.get_node("Cards").remove_child(card)
 	deck_obj.get_node("CollisionShape").scale.z = deck.size() * 0.01 + 0.1
 	return card
 
@@ -154,11 +153,9 @@ func _space_stacked_cards(stack):
 		card.transform.origin.z = -i * 0.01
 		i += 1
 
-func discard(card):
+func discard(card, force_align = false, wiggle = true):
+	yield (card.move_and_reparent(discard_pile_obj, null, force_align, deg2rad(rand_range(-30, 30)) if wiggle else 0.0), "completed")
 	pile.append(card)
-	discard_pile_obj.add_child(card)
-	card.transform.origin = Vector3()
-	card.face_up()
 	_space_stacked_cards(pile)
 
 remotesync func shuffle_deck(rng_seed: int):
@@ -167,11 +164,10 @@ remotesync func shuffle_deck(rng_seed: int):
 	_space_stacked_cards(deck)
 
 func start():
-	yield(get_tree().create_timer(2.0), "timeout")
 	for p in remaining:
 		p.draw(7)
 
-	discard(pop_deck())
+	yield(discard(pop_deck(), true, false), "completed")
 
 	next_player()
 

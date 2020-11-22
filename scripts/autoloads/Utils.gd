@@ -89,3 +89,15 @@ func randomize_seed():
 	var ns = randi()
 	seed(ns)
 	return ns
+
+func reparent(node: Node, new_parent: Node, keep_global = true, request_ready = false):
+	var old_transform = node.global_transform
+	node.get_parent().remove_child(node)
+
+	if request_ready:
+		node.request_ready()
+
+	new_parent.add_child(node)
+	
+	if keep_global:
+		node.global_transform = old_transform

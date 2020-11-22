@@ -19,7 +19,8 @@ func _process(delta):
 		current_angle -= 360
 
 func set_angle(angle):
-	node.rotate(axis, -current_angle)
-	current_angle = angle
-	node.rotate(axis, current_angle)
+	if node != null:
+		node.rotate(axis, -current_angle)
+		current_angle = angle
+		node.rotate(axis, current_angle)
 	
