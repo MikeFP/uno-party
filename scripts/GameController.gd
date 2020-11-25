@@ -165,14 +165,19 @@ remotesync func shuffle_deck(rng_seed: int):
 
 func start():
 	for p in remaining:
-		p.draw(7)
+		if p == remaining[-1]:
+			yield(p.draw(7), "completed")
+		else:
+			p.draw(7)
 
 	yield(discard(pop_deck(), true, false), "completed")
 
 	next_player()
+	player.enable_playing()
 
 func _on_cards_drawn(_cards, p):
 	if p == player && p.can_play && player.playable.size() == 0:
+		yield(get_tree().create_timer(1.0), "timeout")
 		next_player()
 
 func _on_playable_cards_changed(_playable, p):
@@ -218,10 +223,10 @@ func process_card(card_name, p_id):
 	if card.type == Utils.CardType.REVERSE && remaining.size() > 2:
 		set_order_reversed(!order_reversed)
 	
-	yield(get_tree().create_timer(2.0), "timeout")
+	yield(get_tree().create_timer(1.75), "timeout")
 		
 	print("card played " + str(card.symbol))
-	next_player()
+	next_player(false)
 	post_process_card(card, p)
 	
 func post_process_card(card, p):
@@ -235,21 +240,27 @@ func post_process_card(card, p):
 
 	# process card effects after passing turn to next player
 	if card.type == Utils.CardType.PLUS2:
-		player.draw(2)
-		next_player()
+		yield(get_tree().create_timer(0.25), "timeout")
+		yield(player.draw(2), "completed")
+		yield(get_tree().create_timer(0.25), "timeout")
+		next_player(false)
 	elif card.type == Utils.CardType.PLUS4:
-		player.draw(4)
-		next_player()
+		yield(get_tree().create_timer(0.25), "timeout")
+		yield(player.draw(4), "completed")
+		yield(get_tree().create_timer(0.25), "timeout")
+		next_player(false)
 	elif card.type == Utils.CardType.BLOCK:
-		next_player()
+		yield(get_tree().create_timer(1.0), "timeout")
+		next_player(false)
 	elif card.type == Utils.CardType.REVERSE && remaining.size() == 2 && !player_removed:
-		next_player()
-
+		yield(get_tree().create_timer(1.0), "timeout")
+		next_player(false)
+	
 	processing_card = null
-	yield(get_tree(), "idle_frame")
 	player.start_turn()
+	player.enable_playing()
 
-func next_player():
+func next_player(enable_playing := true):
 	if current >= 0:
 		player.end_turn()
 		# print("ending player " + str(player.player_id) + " turn")
@@ -263,9 +274,9 @@ func next_player():
 
 	print("now its player " + str(player.player_id))
 
-	if processing_card == null:
-		yield(get_tree(), "idle_frame")
-		player.start_turn()
+	player.start_turn()
+	if enable_playing:
+		player.enable_playing()
 
 func _on_uno_called_out(_p):
 	player.draw(2)

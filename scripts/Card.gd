@@ -57,7 +57,9 @@ func enable_area():
 
 # Animates the card's origin to `target_pos` and, optionally, its basis to `target_basis`.
 # 
-# If `force_align` is false, the card will only be rotated to match the target forward axis, but its up axis will be aligned to the distance vector to the target.
+# If `force_align` is false, the card will only be rotated to match the target forward axis,
+# but its up axis will be aligned to the distance vector to the target.
+#
 # A final rotation of `wiggle_angle` in radians will be added around the final forward axis, so the card's up axis will not be completely aligned with the target up axis.
 # Operations take place in global space.
 func move_to(target_pos: Vector3, target_basis, force_align := true, wiggle_angle := 0.0):

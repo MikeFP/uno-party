@@ -98,9 +98,11 @@ func lookat_camera():
 	rotate_y(deg2rad(-180))
 
 func start_turn():
-	can_play = true
 	played_turn = false
 	name_ui["custom_styles/panel"].modulate_color = Color8(251, 157, 59)
+
+func enable_playing():
+	can_play = true
 	_update_playable()
 
 func _update_playable():
@@ -146,12 +148,19 @@ func remove_card(card):
 
 remotesync func draw(amount := 1):
 	var new_cards = []
-	for _i in range(amount):
+	for i in range(amount):
 		var c = controller.pop_deck()
-		yield(c.move_to(self.global_transform.origin, self.global_transform.basis), "completed")
-		add_card(c)
+		if i == amount - 1:
+			yield(_delayed_add_drawn_card(c), "completed")
+		else:
+			_delayed_add_drawn_card(c)
+			yield(get_tree().create_timer(0.25), "timeout")
 		new_cards.append(c)
 	emit_signal("drawn", new_cards)
+
+func _delayed_add_drawn_card(card):
+	yield(card.move_to(self.global_transform.origin, self.global_transform.basis), "completed")
+	add_card(card)
 
 func space_out():
 	if cards.size() > 0:
