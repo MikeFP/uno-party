@@ -14,13 +14,9 @@ func _ready():
 		node = get_node(node_path)
 
 func _process(delta):
-	set_angle(current_angle + angular_velocity * delta)
-	if current_angle > 360:
-		current_angle -= 360
+	set_angle(fmod(current_angle + rad2deg(angular_velocity) * delta, 360))
 
 func set_angle(angle):
 	if node != null:
-		node.rotate(axis, -current_angle)
-		current_angle = angle
-		node.rotate(axis, current_angle)
+		node.rotate(axis, deg2rad(angle-current_angle))
 	

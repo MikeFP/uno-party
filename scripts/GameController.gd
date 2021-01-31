@@ -3,7 +3,7 @@ extends Node
 var player_scene = preload("res://scenes/Player Hand.tscn")
 
 export var num_players := 2
-var force_cards = []
+var force_cards = ["reverse RED", "reverse BLUE", "reverse GREEN", "reverse YELLOW"]
 
 onready var hands = $Hands
 onready var deck_obj = $Deck
@@ -284,7 +284,7 @@ func _on_uno_called_out(_p):
 func set_order_reversed(value):
 	order_reversed = value
 	turn_flow.angular_velocity = -turn_flow.angular_velocity
-	turn_flow.current_angle = turn_flow.current_angle + (-45 if !order_reversed else 45)
+	turn_flow.current_angle = turn_flow.current_angle + (30 if !order_reversed else -30)
 
 	var uv_scale = turn_flow.mesh.material.uv1_scale
 	turn_flow.mesh.material.uv1_scale = Vector3(-uv_scale.x,1,1)
