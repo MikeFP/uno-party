@@ -62,21 +62,21 @@ func enable_area():
 #
 # A final rotation of `wiggle_angle` in radians will be added around the final forward axis, so the card's up axis will not be completely aligned with the target up axis.
 # Operations take place in global space.
-func move_to(target_pos: Vector3, target_basis, force_align := true, wiggle_angle := 0.0):
+func move_to(target_pos: Vector3, target_basis, force_align := true, wiggle_angle := 0.0, duration := 0.5, jump_height := 1.0):
 
 	# interpolate position
 	tween.interpolate_property(self, "global_transform:origin:x", \
 		null, target_pos.x, \
-		0.5, Tween.TRANS_QUAD, Tween.EASE_IN)
+		duration, Tween.TRANS_QUAD, Tween.EASE_IN)
 	tween.interpolate_property(self, "global_transform:origin:z", \
 		null, target_pos.z, \
-		0.5, Tween.TRANS_QUAD, Tween.EASE_IN)
+		duration, Tween.TRANS_QUAD, Tween.EASE_IN)
 	tween.interpolate_property(self, "global_transform:origin:y", \
-		null, global_transform.origin.y + 1, \
-		0.25, Tween.TRANS_QUAD, Tween.EASE_OUT)
+		null, global_transform.origin.y + jump_height, \
+		duration/2, Tween.TRANS_QUAD, Tween.EASE_OUT)
 	tween.interpolate_property(self, "global_transform:origin:y", \
-		global_transform.origin.y + 1, target_pos.y, \
-		0.25, Tween.TRANS_QUAD, Tween.EASE_IN, 0.25)
+		global_transform.origin.y + jump_height, target_pos.y, \
+		duration/2, Tween.TRANS_QUAD, Tween.EASE_IN, duration/2)
 	
 	# interpolate rotation and scale
 	if target_basis != null:
@@ -99,7 +99,7 @@ func move_to(target_pos: Vector3, target_basis, force_align := true, wiggle_angl
 
 		tween.interpolate_property(self, "global_transform:basis", \
 			null, target_basis, \
-			0.25, Tween.TRANS_QUAD, Tween.EASE_IN, 0.125)
+			duration/2, Tween.TRANS_QUAD, Tween.EASE_IN, duration/4)
 
 	# wait animation
 	tween.start()

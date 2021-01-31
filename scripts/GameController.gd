@@ -3,7 +3,7 @@ extends Node
 var player_scene = preload("res://scenes/Player Hand.tscn")
 
 export var num_players := 2
-var force_cards = ["reverse RED", "reverse BLUE", "reverse GREEN", "reverse YELLOW"]
+var force_cards = []
 
 onready var hands = $Hands
 onready var deck_obj = $Deck

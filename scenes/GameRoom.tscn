@@ -95,10 +95,10 @@ process_material = SubResource( 5 )
 draw_pass_1 = SubResource( 7 )
 
 [node name="Turn Flow" type="CSGMesh" parent="Environment"]
-transform = Transform( -0.588273, 0, 0.806871, 0, 1, 0, -0.806871, 0, -0.588273, 0, 0, -5 )
+transform = Transform( 0.71223, 0, 0.69989, 0, 1, 0, -0.69989, 0, 0.71223, 0, 0, -5 )
 mesh = SubResource( 9 )
 script = ExtResource( 9 )
-current_angle = 72.0678
+current_angle = 350.471
 angular_velocity = 0.5
 
 [node name="MainHandPosition" type="Position3D" parent="."]

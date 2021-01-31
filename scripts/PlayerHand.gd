@@ -21,6 +21,7 @@ var highlighted_card
 
 var max_space_between_cards = 0.35
 var max_width = 4
+var card_width = 1.0
 
 var can_play = false
 var uno = false
@@ -130,7 +131,6 @@ func add_card(card):
 		card.hl_area.connect("mouse_entered", self, "_on_mouse_entered_hl_area", [card])
 		card.hl_area.connect("input_event", self, "_on_card_click", [card])
 
-		space_out()
 		_update_playable()
 
 func remove_card(card):
@@ -159,23 +159,49 @@ remotesync func draw(amount := 1):
 	emit_signal("drawn", new_cards)
 
 func _delayed_add_drawn_card(card):
-	yield(card.move_to(self.global_transform.origin, self.global_transform.basis), "completed")
+	var anim = card.move_to(next_card_position(), self.global_transform.basis)
+	yield(get_tree().create_timer(0.25), "timeout")
+	var pos = space_out(cards.size() + 1)
+	yield(anim, "completed")
 	add_card(card)
+	card.transform.origin = pos[-1]
 
-func space_out():
-	if cards.size() > 0:
-		var width = (cards.size() - 1) * max_space_between_cards + 1.0
-		var sbc = max_space_between_cards if width < max_width else ((max_width - 1.0)/(cards.size() - 1))
-		
+func space_out(override_amount = null, duration := 0.25):
+	var amount = override_amount if override_amount != null else cards.size()
+	var positions = _spaced_positions_for(amount)
+	for i in range(min(cards.size(), positions.size())):
+		var c = cards[i]
+		c.move_to(to_global(positions[i]), null, true, 0, duration, 0)
+	return positions
+
+func _spaced_positions_for(cards_amount: int) -> Array:
+	var res = []
+	if cards_amount == 0:
+		return res
+	var bounds = _local_bounds_for(cards_amount)
+	var width = bounds.size.x
+	var sbc = max_space_between_cards if (width < max_width || cards_amount == 1) else ((max_width - card_width)/(cards_amount - 1))
+	var x = bounds.position.x - card_width/2
+	var z = bounds.size.z
+
+	for _i in range(cards_amount):
+		res.append(Vector3(x, 0, -z * 0.01))
+		x -= sbc
+		z += 1
+	return res
+
+func _local_bounds_for(cards_amount: int) -> AABB:
+	var width = 0
+	var x = 0
+	if cards_amount > 0:
+		width = (cards_amount - 1) * max_space_between_cards + card_width		
 		width = min(width, max_width)
+		x = width/2
+	return AABB(Vector3.RIGHT * x, Vector3(width, 0, cards_amount * 0.01))
 
-		var x = -width/2 + 0.5
-		var i = cards.size() - 1
-		for c in cards:
-			c.transform.origin.x = x
-			c.transform.origin.z = - i * 0.01
-			x += sbc
-			i -= 1
+func next_card_position() -> Vector3:
+	var bounds = _local_bounds_for(cards.size() + 1)
+	return global_transform.origin - global_transform.basis.x * bounds.position.x - global_transform.basis.z * bounds.size.z
 
 func _on_card_click(_camera, event, _click_pos, _normal, _shape, card):
 	if can_play && playable.has(card) && event is InputEventMouseButton && event.pressed:
