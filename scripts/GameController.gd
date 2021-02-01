@@ -142,6 +142,22 @@ func insert_in_deck(cards, index := -1):
 func pop_deck():
 	var card = deck.pop_back()
 	deck_obj.get_node("CollisionShape").scale.z = deck.size() * 0.01 + 0.1
+	if (deck.size() == 0):
+		var collected = []
+		for _i in range(pile.size() - 1):
+			collected.append(pile.pop_front())
+		collected.shuffle()
+		var anim = null
+		for i in range(collected.size()):
+			collected[i].face_down()
+			var pos = deck_obj.to_global(Vector3.FORWARD * i * 0.01)
+			anim = collected[i].move_to(pos, deck_obj.transform.basis)
+		yield(get_tree().create_timer(0.25), "timeout")
+		_space_stacked_cards(pile)
+		yield(anim, "completed")
+		insert_in_deck(collected)
+	else:
+		yield(get_tree(), "idle_frame")
 	return card
 
 func top_card():
@@ -171,7 +187,7 @@ func start():
 		else:
 			p.draw(7)
 
-	yield(discard(pop_deck(), true, false), "completed")
+	yield(discard(yield(pop_deck(), "completed"), true, false), "completed")
 
 	next_player()
 	player.enable_playing()

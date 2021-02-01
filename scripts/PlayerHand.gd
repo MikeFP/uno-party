@@ -152,7 +152,7 @@ remotesync func draw(amount := 1):
 	var new_cards = []
 	var size = cards.size()
 	for i in range(amount):
-		var c = controller.pop_deck()
+		var c = yield(controller.pop_deck(), "completed")
 		if i == amount - 1:
 			yield(_delayed_add_drawn_card(c, size + i), "completed")
 		else:
