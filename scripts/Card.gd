@@ -14,9 +14,12 @@ onready var tween := $Tween
 var is_face_up = true
 var type
 
+signal move_over
+
 func _ready():
 	set_color(color)
 	set_symbol(symbol)
+	tween.connect("tween_all_completed", self, "_movement_animation_over")
 
 func set_symbol(new_value: String):
 	symbol = new_value
@@ -103,7 +106,10 @@ func move_to(target_pos: Vector3, target_basis, force_align := true, wiggle_angl
 
 	# wait animation
 	tween.start()
-	yield (tween, "tween_all_completed")
+	yield (self, "move_over")
+
+func _movement_animation_over():
+	emit_signal("move_over")
 
 # Animates the card's transform to the `parent`'s transform and then gets reparented to it.
 # If `custom_position` is provided, it overrides the target position.

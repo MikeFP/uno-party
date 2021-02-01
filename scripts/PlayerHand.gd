@@ -148,23 +148,23 @@ func remove_card(card):
 
 remotesync func draw(amount := 1):
 	var new_cards = []
+	var size = cards.size()
 	for i in range(amount):
 		var c = controller.pop_deck()
 		if i == amount - 1:
-			yield(_delayed_add_drawn_card(c), "completed")
+			yield(_delayed_add_drawn_card(c, size + i), "completed")
 		else:
-			_delayed_add_drawn_card(c)
-			yield(get_tree().create_timer(0.25), "timeout")
+			_delayed_add_drawn_card(c, size + i)
+			yield(get_tree().create_timer(0.275), "timeout")
 		new_cards.append(c)
 	emit_signal("drawn", new_cards)
 
-func _delayed_add_drawn_card(card):
-	var anim = card.move_to(next_card_position(), self.global_transform.basis)
+func _delayed_add_drawn_card(card, current_amount):
+	var anim = card.move_to(next_card_position(current_amount), self.global_transform.basis)
 	yield(get_tree().create_timer(0.25), "timeout")
-	var pos = space_out(cards.size() + 1)
+	space_out(current_amount + 1)
 	yield(anim, "completed")
 	add_card(card)
-	card.transform.origin = pos[-1]
 
 func space_out(override_amount = null, duration := 0.25):
 	var amount = override_amount if override_amount != null else cards.size()
@@ -199,9 +199,10 @@ func _local_bounds_for(cards_amount: int) -> AABB:
 		x = width/2
 	return AABB(Vector3.RIGHT * x, Vector3(width, 0, cards_amount * 0.01))
 
-func next_card_position() -> Vector3:
-	var bounds = _local_bounds_for(cards.size() + 1)
-	return global_transform.origin - global_transform.basis.x * bounds.position.x - global_transform.basis.z * bounds.size.z
+func next_card_position(override_amount = null) -> Vector3:
+	var amount = override_amount if override_amount != null else cards.size()
+	var bounds = _local_bounds_for(amount + 1)
+	return to_global(Vector3.RIGHT * (-bounds.position.x + card_width/2)) - global_transform.basis.z * bounds.size.z
 
 func _on_card_click(_camera, event, _click_pos, _normal, _shape, card):
 	if can_play && playable.has(card) && event is InputEventMouseButton && event.pressed:

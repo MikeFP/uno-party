@@ -154,7 +154,8 @@ func _space_stacked_cards(stack):
 		i += 1
 
 func discard(card, force_align = false, wiggle = true):
-	yield (card.move_and_reparent(discard_pile_obj, null, force_align, deg2rad(rand_range(-30, 30)) if wiggle else 0.0), "completed")
+	var target_position = discard_pile_obj.to_global(Vector3.FORWARD * pile.size() * 0.01)
+	yield (card.move_and_reparent(discard_pile_obj, target_position, force_align, deg2rad(rand_range(-30, 30)) if wiggle else 0.0), "completed")
 	pile.append(card)
 	_space_stacked_cards(pile)
 
