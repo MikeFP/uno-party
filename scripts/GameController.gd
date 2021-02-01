@@ -241,19 +241,23 @@ func post_process_card(card, p):
 
 	# process card effects after passing turn to next player
 	if card.type == Utils.CardType.PLUS2:
+		player.show_event_popup("Drawing 2")
 		yield(get_tree().create_timer(0.25), "timeout")
 		yield(player.draw(2), "completed")
 		yield(get_tree().create_timer(0.25), "timeout")
 		next_player(false)
 	elif card.type == Utils.CardType.PLUS4:
+		player.show_event_popup("Drawing 4")
 		yield(get_tree().create_timer(0.25), "timeout")
 		yield(player.draw(4), "completed")
 		yield(get_tree().create_timer(0.25), "timeout")
 		next_player(false)
 	elif card.type == Utils.CardType.BLOCK:
+		player.show_event_popup("Turn blocked")
 		yield(get_tree().create_timer(1.0), "timeout")
 		next_player(false)
 	elif card.type == Utils.CardType.REVERSE && remaining.size() == 2 && !player_removed:
+		player.show_event_popup("Turn blocked")
 		yield(get_tree().create_timer(1.0), "timeout")
 		next_player(false)
 	

@@ -1,6 +1,7 @@
 extends Spatial
 
 var name_control_scene = preload("res://scenes/ui/PlayerName.tscn")
+var event_popup_scene = preload("res://scenes/ui/EventPopup.tscn")
 
 export var player_id := 0
 export var controller_path: NodePath
@@ -22,6 +23,7 @@ var highlighted_card
 var max_space_between_cards = 0.35
 var max_width = 4
 var card_width = 1.0
+var card_height = 1.5
 
 var can_play = false
 var uno = false
@@ -312,3 +314,11 @@ func _uno_pressed():
 					rpc_id(1, "handle_call_out_uno")
 				else:
 					handle_call_out_uno()
+
+func ui_hand_center() -> Vector2:
+	return get_viewport().get_camera().unproject_position(to_global(Vector3.UP * card_height)) + Vector2.UP * 20
+				
+func show_event_popup(event_text: String):
+	var popup = event_popup_scene.instance()
+	add_child(popup)
+	popup.popup(ui_hand_center(), event_text, 2.0)
