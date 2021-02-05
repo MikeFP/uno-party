@@ -3,6 +3,7 @@ extends Node
 var player_scene = preload("res://scenes/Player Hand.tscn")
 
 export var num_players := 2
+export var initial_hand_size := 7
 var force_cards = []
 
 onready var hands = $Hands
@@ -16,6 +17,9 @@ onready var right_hand_pos = $RightHandPosition.transform.origin
 onready var color_selector = $"UI/Color Picker"
 onready var uno_button = $"UI/UNO Button"
 onready var turn_flow = $"Environment/Turn Flow"
+onready var match_result = $MatchResults
+onready var continue_button = $MatchResults/ColorRect/CenterContainer/Panel/MarginContainer/Control/ContinueButton
+onready var rematch_button = $MatchResults/ColorRect/CenterContainer/Panel/MarginContainer/Control/RematchButton
 
 var players = {}
 var remaining = []
@@ -33,6 +37,8 @@ var order_reversed = false setget set_order_reversed
 signal color_picked
 
 func _ready():
+	color_selector.connect("color_picked", self, "_on_color_picked")
+
 	if GameState.player_name == null:
 		for h in hands.get_children():
 			if h.player_id == 1:
@@ -40,8 +46,27 @@ func _ready():
 			else:
 				hands.remove_child(h)
 				h.queue_free()
+
+	_setup_new_game()
+
+	if GameState.player_name == null:
+		for i in range(num_players - 1):
+			instance_new_player(i + 2)
+		start()
+
+func _setup_new_game():
+	current = -1
+	order_reversed = false
+	order = []
+	remaining = []
+	processing_card = null
+
+	for p in players.values():
+		order.append(p.player_id)
+		remaining.append(p)
+		p.remove_cards()
 	
-	color_selector.connect("color_picked", self, "_on_color_picked")
+	match_result.hide()
 
 	clear(deck, deck_obj.get_node("Cards"))
 	clear(pile, discard_pile_obj)
@@ -51,11 +76,8 @@ func _ready():
 	insert_in_deck(Utils.generate_deck(force_cards))
 
 	if GameState.player_name == null:
-		for i in range(num_players - 1):
-			instance_new_player(i + 2)
 		if force_cards.size() == 0:
 			shuffle_deck(Utils.randomize_seed())
-		start()
 
 func instance_new_player(player_id):
 	var p = player_scene.instance()
@@ -183,9 +205,9 @@ remotesync func shuffle_deck(rng_seed: int):
 func start():
 	for p in remaining:
 		if p == remaining[-1]:
-			yield(p.draw(7), "completed")
+			yield(p.draw(initial_hand_size), "completed")
 		else:
-			p.draw(7)
+			p.draw(initial_hand_size)
 
 	yield(discard(yield(pop_deck(), "completed"), true, false), "completed")
 
@@ -243,6 +265,9 @@ func process_card(card_name, p_id):
 	yield(get_tree().create_timer(1.75), "timeout")
 		
 	print("card played " + str(card.symbol))
+	if (p.cards.size() == 0):
+		end_game(p)
+		return
 	next_player(false)
 	post_process_card(card, p)
 	
@@ -309,3 +334,19 @@ func set_order_reversed(value):
 
 	var uv_scale = turn_flow.mesh.material.uv1_scale
 	turn_flow.mesh.material.uv1_scale = Vector3(-uv_scale.x,1,1)
+
+func end_game(winner):
+	match_result.get_node("ColorRect/CenterContainer/Panel/MarginContainer/Control/VBox/PlayerName").text = winner.get_name()
+	yield(get_tree().create_timer(0.5), "timeout")
+	continue_button.connect("button_up", self, "_navigate_lobby")
+	rematch_button.connect("button_up", self, "restart")
+	match_result.show()
+
+func _navigate_lobby():
+	get_tree().change_scene("scenes/Lobby.tscn")
+	queue_free()
+
+func restart():
+	_setup_new_game()
+	if GameState.player_name == null:
+		start()

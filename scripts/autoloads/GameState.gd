@@ -62,6 +62,7 @@ func get_player_by_id(id):
 func host_game(nickname):
 	player_name = nickname
 	player_id = 1
+	players[1] = player_name
 	var host = NetworkedMultiplayerENet.new()
 	host.create_server(DEFAULT_PORT, MAX_PEERS)
 	get_tree().set_network_peer(host)
@@ -100,7 +101,7 @@ func end_game():
 func begin_game():
 	assert(get_tree().is_network_server())
 	
-	var player_ids = [1] + players.keys()
+	var player_ids = players.keys()
 	var ss = Utils.randomize_seed()
 
 	rpc("pre_start_game", player_ids, ss)
@@ -136,3 +137,6 @@ remote func ready_to_start(id):
 		for p in players:
 			rpc_id(p, "post_start_game")
 		post_start_game()
+
+func get_players_ids():
+	return players.keys()

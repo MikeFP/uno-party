@@ -26,6 +26,7 @@ var card_width = 1.0
 var card_height = 1.5
 
 var can_play = false
+var has_drawn = false
 var uno = false
 var played_turn = false
 
@@ -40,7 +41,7 @@ func _ready():
 		if GameState.player_name == null:
 			add_card(c)
 		else:
-			remove_child(c)
+			$Cards.remove_child(c)
 			c.queue_free()
 
 	deck_obj.connect("input_event", self, "_handle_deck_input")
@@ -52,7 +53,20 @@ func _ready():
 		name_ui = name_control_scene.instance()
 		add_child(name_ui)
 	
-	name_ui.get_node("Label").text = ("Player " + str(player_id)) if GameState.player_name == null else GameState.get_player_by_id(player_id)
+	name_ui.get_node("Label").text = get_name()
+
+func remove_cards():
+	for c in cards:
+		remove_card(c)
+		c.queue_free()
+	for c in $Cards.get_children():
+		$Cards.remove_child(c)
+		c.queue_free()
+
+	can_play = false
+	has_drawn = false
+	uno = false
+	played_turn = false
 
 func _process(_delta):
 	var y_shift = 0
@@ -88,12 +102,15 @@ func _handle_deck_input(_camera, event, _click_pos, _normal, _shape):
 				else:
 					handle_draw()
 
+func get_name():
+	return ("Player " + str(player_id)) if GameState.player_name == null else GameState.get_player_by_id(player_id)
+
 remote func handle_draw():
 	if can_draw():
 		rpc("draw")
 
 func can_draw():
-	return can_play && playable.size() == 0
+	return can_play && !has_drawn && playable.size() == 0
 
 func lookat_camera():
 	transform.basis = Basis()
@@ -151,6 +168,8 @@ func remove_card(card):
 remotesync func draw(amount := 1):
 	var new_cards = []
 	var size = cards.size()
+	if can_play:
+		has_drawn = true
 	for i in range(amount):
 		var c = yield(controller.pop_deck(), "completed")
 		if i == amount - 1:
@@ -260,6 +279,7 @@ remotesync func play_card(card_name):
 func end_turn():
 	stop_highlight()
 	playable = []
+	has_drawn = false
 	name_ui["custom_styles/panel"].modulate_color = Color8(44, 145, 194)
 	for c in cards:
 		c.disable_highlight()

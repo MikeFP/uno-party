@@ -101,3 +101,9 @@ func reparent(node: Node, new_parent: Node, keep_global = true, request_ready = 
 	
 	if keep_global:
 		node.global_transform = old_transform
+
+func change_scene(scene: PackedScene):
+	var instance = scene.instance()
+	var root = get_tree().get_root()
+	root.get_children()[0].hide()
+	root.add_child(instance)

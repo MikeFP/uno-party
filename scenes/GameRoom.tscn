@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=2]
+[gd_scene load_steps=27 format=2]
 
 [ext_resource path="res://scenes/Player Hand.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scripts/GameController.gd" type="Script" id=2]
@@ -10,6 +10,7 @@
 [ext_resource path="res://textures/setas.png" type="Texture" id=8]
 [ext_resource path="res://scripts/utils/Rotate.gd" type="Script" id=9]
 [ext_resource path="res://scenes/ui/PlayerName.tscn" type="PackedScene" id=10]
+[ext_resource path="res://fonts/Roboto-Black.ttf" type="DynamicFontData" id=11]
 
 [sub_resource type="PlaneMesh" id=1]
 
@@ -72,9 +73,17 @@ modulate_color = Color( 0.137255, 0.588235, 0.737255, 1 )
 [sub_resource type="BoxShape" id=13]
 extents = Vector3( 0.6, 0.85, 1.1 )
 
+[sub_resource type="DynamicFont" id=14]
+size = 24
+font_data = ExtResource( 11 )
+
+[sub_resource type="DynamicFont" id=15]
+font_data = ExtResource( 11 )
+
 [node name="GameRoom" type="Spatial"]
 script = ExtResource( 2 )
 num_players = 3
+initial_hand_size = 1
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.71934, 0.694658, 0, -0.694658, 0.71934, 0, 15.9158, 11.5736 )
@@ -95,7 +104,7 @@ process_material = SubResource( 5 )
 draw_pass_1 = SubResource( 7 )
 
 [node name="Turn Flow" type="CSGMesh" parent="Environment"]
-transform = Transform( -0.255465, 0, -0.959091, 0, 1, 0, 0.959091, 0, -0.255465, 0, 0, -5 )
+transform = Transform( 0.86587, 0, -0.45188, 0, 1, 0, 0.45188, 0, 0.86587, 0, 0, -5 )
 mesh = SubResource( 9 )
 script = ExtResource( 9 )
 current_angle = 0.0
@@ -257,6 +266,118 @@ rect_pivot_offset = Vector2( 50, 50 )
 texture_normal = ExtResource( 7 )
 expand = true
 stretch_mode = 5
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MatchResults" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ColorRect" type="ColorRect" parent="MatchResults"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0, 0, 0, 0.501961 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CenterContainer" type="CenterContainer" parent="MatchResults/ColorRect"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 0.672729
+margin_right = 0.672729
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Panel" type="Panel" parent="MatchResults/ColorRect/CenterContainer"]
+margin_left = 412.0
+margin_top = 185.0
+margin_right = 612.0
+margin_bottom = 415.0
+rect_min_size = Vector2( 200, 230 )
+
+[node name="MarginContainer" type="MarginContainer" parent="MatchResults/ColorRect/CenterContainer/Panel"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 4.0
+margin_right = -4.0
+margin_bottom = -4.0
+custom_constants/margin_top = 20
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Control" type="Control" parent="MatchResults/ColorRect/CenterContainer/Panel/MarginContainer"]
+margin_top = 20.0
+margin_right = 192.0
+margin_bottom = 222.0
+
+[node name="VBox" type="VBoxContainer" parent="MatchResults/ColorRect/CenterContainer/Panel/MarginContainer/Control"]
+margin_right = 192.0
+margin_bottom = 192.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PlayerName" type="Label" parent="MatchResults/ColorRect/CenterContainer/Panel/MarginContainer/Control/VBox"]
+margin_right = 192.0
+margin_bottom = 29.0
+custom_fonts/font = SubResource( 14 )
+text = "Player"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="wins" type="Label" parent="MatchResults/ColorRect/CenterContainer/Panel/MarginContainer/Control/VBox"]
+margin_top = 33.0
+margin_right = 192.0
+margin_bottom = 52.0
+custom_fonts/font = SubResource( 15 )
+text = "wins"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MarginContainer" type="MarginContainer" parent="MatchResults/ColorRect/CenterContainer/Panel/MarginContainer/Control/VBox"]
+margin_top = 56.0
+margin_right = 192.0
+margin_bottom = 80.0
+custom_constants/margin_top = 10
+
+[node name="Congrats" type="Label" parent="MatchResults/ColorRect/CenterContainer/Panel/MarginContainer/Control/VBox/MarginContainer"]
+margin_top = 10.0
+margin_right = 192.0
+margin_bottom = 24.0
+text = "Congratulations!"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="RematchButton" type="Button" parent="MatchResults/ColorRect/CenterContainer/Panel/MarginContainer/Control"]
+margin_left = 23.0
+margin_top = 154.0
+margin_right = 175.0
+margin_bottom = 181.0
+text = "Rematch"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ContinueButton" type="Button" parent="MatchResults/ColorRect/CenterContainer/Panel/MarginContainer/Control"]
+margin_left = 23.0
+margin_top = 115.0
+margin_right = 175.0
+margin_bottom = 142.0
+text = "Continue"
 __meta__ = {
 "_edit_use_anchors_": false
 }

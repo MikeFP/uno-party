@@ -62,7 +62,8 @@ func refresh_lobby():
 	players_list.clear()
 	players_list.add_item(GameState.player_name + " (You)")
 	for p in GameState.get_players():
-		players_list.add_item(p)
+		if (GameState.player_name != p):
+			players_list.add_item(p)
 	
 	start_button.disabled = not get_tree().is_network_server()
 
