@@ -1,9 +1,10 @@
 tool
 extends Spatial
+class_name Card
 
 enum CardColor { RED, YELLOW, GREEN, BLUE, BLACK }
 
-export(CardColor) var color := CardColor.RED setget set_color
+export(CardColor) remotesync var color := CardColor.RED setget set_color
 export var symbol := "1" setget set_symbol
 
 onready var symbol_obj := $"Viewport/Card Texture/symbol"
@@ -13,6 +14,7 @@ onready var tween := $Tween
 
 var is_face_up = true
 var type
+var effects = []
 
 signal move_over
 
@@ -27,7 +29,7 @@ func set_symbol(new_value: String):
 	if type != Utils.CardType.NONE:
 		_update_symbol()
 
-func set_color(new_color):
+remotesync func set_color(new_color):
 	color = new_color
 	
 	if is_inside_tree():
@@ -124,3 +126,19 @@ func move_and_reparent(parent: Spatial, custom_position = null, force_align = tr
 	
 	yield(move_to(target_pos, target_basis, force_align, wiggle_angle), "completed")
 	Utils.reparent(self, parent)
+
+
+func add_effect(effect: CardEffect):
+	effect.card = self
+	effects.append(effect)
+	add_child(effect)
+
+func process_effects(player):
+	var state = false
+	for e in effects:
+		var res = e.process(player)
+		if res is GDScriptFunctionState:
+			state = true
+			yield(e, "processed")
+	if !state:
+		yield(get_tree(), "idle_frame")

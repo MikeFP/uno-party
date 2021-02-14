@@ -60,6 +60,10 @@ func instance_card(symbol_name: String, color: int):
 	card.symbol = symbol_name
 	card.color = color
 	card.name = str(get_new_card_id())
+
+	if card.color == CardColor.BLACK:
+		card.add_effect(PickColorEffect.new())
+
 	return card
 
 func generate_deck(force_cards: Array = []):

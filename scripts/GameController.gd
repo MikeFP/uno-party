@@ -4,7 +4,7 @@ var player_scene = preload("res://scenes/Player Hand.tscn")
 
 export var num_players := 2
 export var initial_hand_size := 7
-var force_cards = []
+var force_cards = ["wildcard BLACK", "wildcard BLACK"]
 
 onready var hands = $Hands
 onready var deck_obj = $Deck
@@ -14,7 +14,6 @@ onready var main_hand_pos = $MainHandPosition
 onready var left_hand_pos = $LeftHandPosition.transform.origin
 onready var right_hand_pos = $RightHandPosition.transform.origin
 
-onready var color_selector = $"UI/Color Picker"
 onready var uno_button = $"UI/UNO Button"
 onready var turn_flow = $"Environment/Turn Flow"
 onready var match_result = $MatchResults
@@ -34,11 +33,7 @@ var processing_card
 var current = -1
 var order_reversed = false setget set_order_reversed
 
-signal color_picked
-
 func _ready():
-	color_selector.connect("color_picked", self, "_on_color_picked")
-
 	if GameState.player_name == null:
 		for h in hands.get_children():
 			if h.player_id == 1:
@@ -46,6 +41,11 @@ func _ready():
 			else:
 				hands.remove_child(h)
 				h.queue_free()
+	else:
+		for h in hands.get_children():
+			hands.remove_child(h)
+			h.queue_free()
+		players = {}
 
 	_setup_new_game()
 
@@ -227,44 +227,23 @@ func _on_playable_cards_changed(_playable, p):
 			deck_obj.disable_hover()
 
 func _on_card_played(card, p):
+	print("card played " + str(card.symbol))
 	process_card(card.name, p.player_id)
-
-func _on_color_picked(color):
-	color_selector.hide()
-
-	if GameState.player_name == null:
-		emit_color_picked(color)
-	else:
-		if not get_tree().is_network_server():
-			rpc_id(1, "handle_color_picked", color)
-		else:
-			handle_color_picked(color)
-
-remote func handle_color_picked(color):
-	rpc("emit_color_picked", color)
-
-remotesync func emit_color_picked(color):
-	emit_signal("color_picked", color)
 
 func process_card(card_name, p_id):
 	var card = discard_pile_obj.get_node(card_name)
 	var p = players[p_id]
 
 	processing_card = card
+	yield(processing_card.process_effects(p), "completed")
 
-	# process card effects when played, before passing turn
-	if card.color == Utils.CardColor.BLACK:
-		if GameState.player_name == null || player.player_id == GameState.player_id:
-			color_selector.show()
-		var color = yield(self, "color_picked")
-		card.color = color
+	print("card processed")
 	
 	if card.type == Utils.CardType.REVERSE && remaining.size() > 2:
 		set_order_reversed(!order_reversed)
 	
 	yield(get_tree().create_timer(1.75), "timeout")
-		
-	print("card played " + str(card.symbol))
+
 	if (p.cards.size() == 0):
 		end_game(p)
 		return

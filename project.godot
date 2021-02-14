@@ -8,9 +8,26 @@
 
 config_version=4
 
-_global_script_classes=[  ]
+_global_script_classes=[ {
+"base": "Spatial",
+"class": "Card",
+"language": "GDScript",
+"path": "res://scripts/Card.gd"
+}, {
+"base": "Node",
+"class": "CardEffect",
+"language": "GDScript",
+"path": "res://scripts/card_effects/CardEffect.gd"
+}, {
+"base": "CardEffect",
+"class": "PickColorEffect",
+"language": "GDScript",
+"path": "res://scripts/card_effects/PickColorEffect.gd"
+} ]
 _global_script_class_icons={
-
+"Card": "",
+"CardEffect": "",
+"PickColorEffect": ""
 }
 
 [application]

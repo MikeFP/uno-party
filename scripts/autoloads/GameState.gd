@@ -28,8 +28,8 @@ func _ready():
 	get_tree().connect("server_disconnected", self, "_server_disconnected")
 
 func _player_connected(id):
-	# Registration of a client begins here, tell the connected player that we are here.
-	player_id = id
+	# Registration of a client begins here, send the new peer info about the other peers.
+	print("peer connected with id " + str(id))
 	rpc_id(id, "register_player", player_name)
 
 func _player_disconnected(id):
@@ -57,30 +57,30 @@ func get_players():
 func get_player_by_id(id):
 	if players.has(id) :
 		return players[id]
-	return null
+	return ""
 
 func host_game(nickname):
 	player_name = nickname
-	player_id = 1
-	players[1] = player_name
 	var host = NetworkedMultiplayerENet.new()
 	host.create_server(DEFAULT_PORT, MAX_PEERS)
 	get_tree().set_network_peer(host)
+	player_id = get_tree().get_network_unique_id()
+	players[player_id] = nickname
 
 func join_game(ip, nickname):
 	player_name = nickname
 	var client = NetworkedMultiplayerENet.new()
 	client.create_client(ip, DEFAULT_PORT)
 	get_tree().set_network_peer(client)
+	player_id = get_tree().get_network_unique_id()
+	players[player_id] = nickname
 
 # Lobby management functions.
 
 remote func register_player(nickname):
 	var id = get_tree().get_rpc_sender_id()
-	print(id)
 	players[id] = nickname
 	emit_signal("player_list_changed")
-
 
 func unregister_player(id):
 	players.erase(id)
@@ -118,10 +118,10 @@ remote func pre_start_game(player_ids, ss):
 
 	if not get_tree().is_network_server():
 		# Tell server we are ready to start.
+		print("sending id ready " + str(player_id))
 		rpc_id(1, "ready_to_start", player_id)
 	else:
-		if players.size() == 0:
-			rpc("post_start_game")
+		ready_to_start(1)
 
 remotesync func post_start_game():
 	get_tree().set_pause(false)
@@ -130,13 +130,12 @@ remotesync func post_start_game():
 remote func ready_to_start(id):
 	assert(get_tree().is_network_server())
 
+	print("peer is ready " + str(id))
 	if not id in players_ready:
 		players_ready.append(id)
 
 	if players_ready.size() == players.size():
-		for p in players:
-			rpc_id(p, "post_start_game")
-		post_start_game()
+		rpc("post_start_game")
 
 func get_players_ids():
 	return players.keys()

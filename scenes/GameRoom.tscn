@@ -1,11 +1,9 @@
-[gd_scene load_steps=27 format=2]
+[gd_scene load_steps=25 format=2]
 
 [ext_resource path="res://scenes/Player Hand.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scripts/GameController.gd" type="Script" id=2]
 [ext_resource path="res://scenes/Card.tscn" type="PackedScene" id=3]
 [ext_resource path="res://scripts/Hoverable.gd" type="Script" id=4]
-[ext_resource path="res://scenes/Color Button.tscn" type="PackedScene" id=5]
-[ext_resource path="res://scripts/ColorPicker.gd" type="Script" id=6]
 [ext_resource path="res://textures/logo_menor.png" type="Texture" id=7]
 [ext_resource path="res://textures/setas.png" type="Texture" id=8]
 [ext_resource path="res://scripts/utils/Rotate.gd" type="Script" id=9]
@@ -103,7 +101,7 @@ process_material = SubResource( 5 )
 draw_pass_1 = SubResource( 7 )
 
 [node name="Turn Flow" type="CSGMesh" parent="Environment"]
-transform = Transform( 0.64813, 0, 0.730422, 0, 1, 0, -0.730422, 0, 0.64813, 0, 0, -5 )
+transform = Transform( -0.107301, 0, -0.963574, 0, 1, 0, 0.963574, 0, -0.107301, 0, 0, -5 )
 mesh = SubResource( 9 )
 script = ExtResource( 9 )
 current_angle = 0.0
@@ -131,7 +129,7 @@ uno_path = NodePath("../../UI/UNO Button")
 
 [node name="Card" parent="Hands/Player Hand/Cards" index="0" instance=ExtResource( 3 )]
 transform = Transform( 1, 0, -7.10543e-15, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
-color = 2
+color = 0
 symbol = "1"
 
 [node name="PlayerName" parent="Hands/Player Hand" instance=ExtResource( 10 )]
@@ -194,14 +192,14 @@ shape = SubResource( 13 )
 
 [node name="Card" parent="Deck/Cards" instance=ExtResource( 3 )]
 transform = Transform( -1, 0, -1.50996e-07, 0, 1, 0, 1.50996e-07, 2.13163e-14, -1, 0, 0, 0 )
-color = 3
+color = 0
 symbol = "1"
 
 [node name="Discard" type="Spatial" parent="."]
 transform = Transform( -1.25, 1.88745e-07, -6.60024e-15, 0, -5.46392e-08, -1, -1.88745e-07, -1.25, 4.37114e-08, 0, 0, -5 )
 
 [node name="Card" parent="Discard" instance=ExtResource( 3 )]
-color = 1
+color = 0
 symbol = "1"
 
 [node name="UI" type="Control" parent="."]
@@ -211,45 +209,6 @@ mouse_filter = 2
 __meta__ = {
 "_edit_use_anchors_": false
 }
-
-[node name="Color Picker" type="CenterContainer" parent="UI"]
-visible = false
-anchor_right = 1.0
-anchor_bottom = 1.0
-script = ExtResource( 6 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/Color Picker"]
-margin_left = 360.0
-margin_top = 148.0
-margin_right = 664.0
-margin_bottom = 452.0
-
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/Color Picker/VBoxContainer"]
-margin_right = 304.0
-margin_bottom = 150.0
-
-[node name="Red" parent="UI/Color Picker/VBoxContainer/HBoxContainer" instance=ExtResource( 5 )]
-
-[node name="Green" parent="UI/Color Picker/VBoxContainer/HBoxContainer" instance=ExtResource( 5 )]
-modulate = Color( 0.439216, 0.713726, 0.368627, 1 )
-margin_left = 154.0
-margin_right = 304.0
-
-[node name="HBoxContainer2" type="HBoxContainer" parent="UI/Color Picker/VBoxContainer"]
-margin_top = 154.0
-margin_right = 304.0
-margin_bottom = 304.0
-
-[node name="Yellow" parent="UI/Color Picker/VBoxContainer/HBoxContainer2" instance=ExtResource( 5 )]
-modulate = Color( 0.941176, 0.831373, 0.266667, 1 )
-
-[node name="Blue" parent="UI/Color Picker/VBoxContainer/HBoxContainer2" instance=ExtResource( 5 )]
-modulate = Color( 0.00784314, 0.396078, 0.796078, 1 )
-margin_left = 154.0
-margin_right = 304.0
 
 [node name="UNO Button" type="TextureButton" parent="UI"]
 anchor_left = 1.0
