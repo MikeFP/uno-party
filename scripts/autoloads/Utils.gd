@@ -63,6 +63,14 @@ func instance_card(symbol_name: String, color: int):
 
 	if card.color == CardColor.BLACK:
 		card.add_effect(PickColorEffect.new())
+	if card.type == CardType.REVERSE:
+		card.add_effect(ReverseEffect.new())
+	if card.type == CardType.PLUS2:
+		card.add_effect(DrawEffect.new(2))
+	if card.type == CardType.PLUS4:
+		card.add_effect(DrawEffect.new(4))
+	if card.type == CardType.BLOCK:
+		card.add_effect(BlockEffect.new())
 
 	return card
 

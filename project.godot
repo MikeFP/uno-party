@@ -9,6 +9,11 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "CardEffect",
+"class": "BlockEffect",
+"language": "GDScript",
+"path": "res://scripts/card_effects/BlockEffect.gd"
+}, {
 "base": "Spatial",
 "class": "Card",
 "language": "GDScript",
@@ -20,14 +25,27 @@ _global_script_classes=[ {
 "path": "res://scripts/card_effects/CardEffect.gd"
 }, {
 "base": "CardEffect",
+"class": "DrawEffect",
+"language": "GDScript",
+"path": "res://scripts/card_effects/DrawEffect.gd"
+}, {
+"base": "CardEffect",
 "class": "PickColorEffect",
 "language": "GDScript",
 "path": "res://scripts/card_effects/PickColorEffect.gd"
+}, {
+"base": "CardEffect",
+"class": "ReverseEffect",
+"language": "GDScript",
+"path": "res://scripts/card_effects/ReverseEffect.gd"
 } ]
 _global_script_class_icons={
+"BlockEffect": "",
 "Card": "",
 "CardEffect": "",
-"PickColorEffect": ""
+"DrawEffect": "",
+"PickColorEffect": "",
+"ReverseEffect": ""
 }
 
 [application]

@@ -235,12 +235,8 @@ func process_card(card_name, p_id):
 	var p = players[p_id]
 
 	processing_card = card
-	yield(processing_card.process_effects(p), "completed")
-
+	yield(processing_card.process_effects(p, self), "completed")
 	print("card processed")
-	
-	if card.type == Utils.CardType.REVERSE && remaining.size() > 2:
-		set_order_reversed(!order_reversed)
 	
 	yield(get_tree().create_timer(1.75), "timeout")
 
@@ -251,35 +247,14 @@ func process_card(card_name, p_id):
 	post_process_card(card, p)
 	
 func post_process_card(card, p):
-	var player_removed = false
 	if p.cards.size() == 0:
 		var index = remaining.find(p)
 		remaining.remove(index)
 		if index < current:
 			current -= 1
-		player_removed = true
-
-	# process card effects after passing turn to next player
-	if card.type == Utils.CardType.PLUS2:
-		player.show_event_popup("Drawing 2")
-		yield(get_tree().create_timer(0.25), "timeout")
-		yield(player.draw(2), "completed")
-		yield(get_tree().create_timer(0.25), "timeout")
-		next_player(false)
-	elif card.type == Utils.CardType.PLUS4:
-		player.show_event_popup("Drawing 4")
-		yield(get_tree().create_timer(0.25), "timeout")
-		yield(player.draw(4), "completed")
-		yield(get_tree().create_timer(0.25), "timeout")
-		next_player(false)
-	elif card.type == Utils.CardType.BLOCK:
-		player.show_event_popup("Turn blocked")
-		yield(get_tree().create_timer(1.0), "timeout")
-		next_player(false)
-	elif card.type == Utils.CardType.REVERSE && remaining.size() == 2 && !player_removed:
-		player.show_event_popup("Turn blocked")
-		yield(get_tree().create_timer(1.0), "timeout")
-		next_player(false)
+	
+	yield(card.post_process_effects(player, self), "completed")
+	print("card postprocessed")
 	
 	processing_card = null
 	player.start_turn()

@@ -133,12 +133,22 @@ func add_effect(effect: CardEffect):
 	effects.append(effect)
 	add_child(effect)
 
-func process_effects(player):
+func process_effects(player, controller):
 	var state = false
 	for e in effects:
-		var res = e.process(player)
+		var res = e.process(player, controller)
 		if res is GDScriptFunctionState:
 			state = true
 			yield(e, "processed")
+	if !state:
+		yield(get_tree(), "idle_frame")
+
+func post_process_effects(player, controller):
+	var state = false
+	for e in effects:
+		var res = e.post_process(player, controller)
+		if res is GDScriptFunctionState:
+			state = true
+			yield(e, "post_processed")
 	if !state:
 		yield(get_tree(), "idle_frame")

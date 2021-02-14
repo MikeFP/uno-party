@@ -5,7 +5,7 @@ var color_selector_scene = preload("res://scenes/ui/Color Picker.tscn")
 
 signal color_picked
 
-func process(player):
+func process(player, _controller):
 	if GameState.player_name == null || player.player_id == GameState.player_id:
 		var color_selector = color_selector_scene.instance()
 		color_selector.hide()
