@@ -83,7 +83,6 @@ font_data = ExtResource( 11 )
 [node name="GameRoom" type="Spatial"]
 script = ExtResource( 2 )
 num_players = 3
-initial_hand_size = 1
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.71934, 0.694658, 0, -0.694658, 0.71934, 0, 15.9158, 11.5736 )
@@ -104,7 +103,7 @@ process_material = SubResource( 5 )
 draw_pass_1 = SubResource( 7 )
 
 [node name="Turn Flow" type="CSGMesh" parent="Environment"]
-transform = Transform( 0.86587, 0, -0.45188, 0, 1, 0, 0.45188, 0, 0.86587, 0, 0, -5 )
+transform = Transform( 0.64813, 0, 0.730422, 0, 1, 0, -0.730422, 0, 0.64813, 0, 0, -5 )
 mesh = SubResource( 9 )
 script = ExtResource( 9 )
 current_angle = 0.0

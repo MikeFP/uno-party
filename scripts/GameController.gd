@@ -347,6 +347,8 @@ func _navigate_lobby():
 	queue_free()
 
 func restart():
+	continue_button.disconnect("button_up", self, "_navigate_lobby")
+	rematch_button.disconnect("button_up", self, "restart")
 	_setup_new_game()
 	if GameState.player_name == null:
 		start()
