@@ -101,13 +101,10 @@ process_material = SubResource( 5 )
 draw_pass_1 = SubResource( 7 )
 
 [node name="Turn Flow" type="CSGMesh" parent="Environment"]
-transform = Transform( -0.733638, 0, 0.630945, 0, 1, 0, -0.630945, 0, -0.733638, 0, 0, -5 )
+transform = Transform( 0.020986, 0, -0.967202, 0, 1, 0, 0.967202, 0, 0.020986, 0, 0, -5 )
 mesh = SubResource( 9 )
 script = ExtResource( 9 )
-current_angle = 0.0
 angular_velocity = 0.5
-axis = Vector3( 0, 1, 0 )
-node_path = NodePath("")
 
 [node name="MainHandPosition" type="Position3D" parent="."]
 transform = Transform( -1, 2.30405e-07, 2.30405e-07, 0, 0.707107, -0.707107, -3.25841e-07, -0.707107, -0.707107, 0, 1.65, 0 )
@@ -173,7 +170,6 @@ deck_path = NodePath("../../Deck")
 uno_path = NodePath("../../UI/UNO Button")
 
 [node name="Card" parent="Hands/Player Hand4" instance=ExtResource( 3 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 color = 0
 symbol = "1"
 

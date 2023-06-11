@@ -6,30 +6,27 @@
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Connect" type="PanelContainer" parent="."]
-margin_left = 404.0
+margin_left = 407.0
 margin_top = 249.0
-margin_right = 619.0
+margin_right = 617.0
 margin_bottom = 351.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Connect"]
 margin_left = 7.0
 margin_top = 7.0
-margin_right = 208.0
+margin_right = 203.0
 margin_bottom = 95.0
 
 [node name="Label2" type="Label" parent="Connect/VBoxContainer"]
-margin_right = 201.0
+margin_right = 196.0
 margin_bottom = 14.0
 text = "Nickname"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Connect/VBoxContainer"]
 margin_top = 18.0
-margin_right = 201.0
+margin_right = 196.0
 margin_bottom = 42.0
 
 [node name="NameEdit" type="LineEdit" parent="Connect/VBoxContainer/HBoxContainer"]
@@ -39,34 +36,34 @@ rect_min_size = Vector2( 100, 0 )
 
 [node name="HostButton" type="Button" parent="Connect/VBoxContainer/HBoxContainer"]
 margin_left = 104.0
-margin_right = 201.0
+margin_right = 196.0
 margin_bottom = 24.0
 size_flags_horizontal = 3
-text = "Criar sala"
+text = "Create lobby"
 
 [node name="Label" type="Label" parent="Connect/VBoxContainer"]
 margin_top = 46.0
-margin_right = 201.0
+margin_right = 196.0
 margin_bottom = 60.0
 text = "IP"
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="Connect/VBoxContainer"]
 margin_top = 64.0
-margin_right = 201.0
+margin_right = 196.0
 margin_bottom = 88.0
 
 [node name="IPEdit" type="LineEdit" parent="Connect/VBoxContainer/HBoxContainer2"]
-margin_right = 100.0
+margin_right = 118.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 100, 0 )
 size_flags_horizontal = 3
 text = "127.0.0.1"
 
 [node name="JoinButton" type="Button" parent="Connect/VBoxContainer/HBoxContainer2"]
-margin_left = 104.0
-margin_right = 201.0
+margin_left = 122.0
+margin_right = 196.0
 margin_bottom = 24.0
-text = "Entrar na sala"
+text = "Join lobby"
 
 [node name="Players" type="PanelContainer" parent="."]
 visible = false
