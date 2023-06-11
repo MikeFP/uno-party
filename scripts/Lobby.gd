@@ -1,11 +1,11 @@
 extends CenterContainer
 
-onready var host_button := $"Connect/VBoxContainer/HBoxContainer/HostButton"
-onready var join_button := $"Connect/VBoxContainer/HBoxContainer2/JoinButton"
-onready var start_button := $"Players/VBoxContainer/StartButton"
-onready var nick := $Connect/VBoxContainer/HBoxContainer/NameEdit
-onready var ip := $Connect/VBoxContainer/HBoxContainer2/IPEdit
-onready var players_list := $Players/VBoxContainer/List
+onready var host_button := $"%HostButton"
+onready var join_button := $"%JoinButton"
+onready var start_button := $"%StartButton"
+onready var nick := $"%NameEdit"
+onready var ip := $"%IPEdit"
+onready var players_list := $"%PlayerList"
 
 func _ready():
 	host_button.connect("pressed", self, "_on_host_pressed")

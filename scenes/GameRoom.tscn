@@ -101,7 +101,7 @@ process_material = SubResource( 5 )
 draw_pass_1 = SubResource( 7 )
 
 [node name="Turn Flow" type="CSGMesh" parent="Environment"]
-transform = Transform( 0.020986, 0, -0.967202, 0, 1, 0, 0.967202, 0, 0.020986, 0, 0, -5 )
+transform = Transform( 0.823969, 0, 0.506328, 0, 1, 0, -0.506328, 0, 0.823969, 0, 0, -5 )
 mesh = SubResource( 9 )
 script = ExtResource( 9 )
 angular_velocity = 0.5
