@@ -13,13 +13,13 @@
 
 ### Download
 
-Check out the latest [release](https://github.com/MikeFP/uno-party/releases).
+Check out the latest [Windows release](https://github.com/MikeFP/uno-party/releases).
 
 # For devs
 
 ## Installing
 
-The game was made in Godot 3.x. You can download it
+The game was made in Godot 3.5. You can download it
 [here](https://godotengine.org/download/3.x/windows/).
 
 After cloning this repository, to edit the game, open Godot. In the Project Manager window,
